@@ -5,11 +5,10 @@ import shap
 import numpy as np
 import streamlit.components.v1 as components
 
-
 # Set page title and layout
-st.set_page_config(page_title="chemical-human-milk-transfer-predictor", layout="wide")
+st.set_page_config(page_title="Predictor of Chemical Transfer to Breast Milk", layout="wide")
 
-st.title("chemical-human-milk-transfer-predictor")
+st.title("Predictor of Chemical Transfer to Breast Milk")
 
 # Load model and scaler
 @st.cache_resource
