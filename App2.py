@@ -74,7 +74,7 @@ if uploaded_file is not None:
                 shap_values = explainer.shap_values(single_sample)
 
                 # 提取指定类别和样本的 SHAP 值
-                shap_value = shap_values[sample_index,:,class_index]  # 提取类别对应的 SHAP 值
+                shap_value = shap_values[class_index,:,sample_index]  # 提取类别对应的 SHAP 值
                 base_value = float(explainer.expected_value[class_index])
 
                 # 创建 SHAP force plot
@@ -85,7 +85,7 @@ if uploaded_file is not None:
                 force_plot = shap.force_plot(
                     base_value,
                     shap_value,
-                    single_sample[sample_index],
+                    single_sample[0],
                     feature_names=data.columns,
                     matplotlib=False
                 )
