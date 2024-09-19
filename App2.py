@@ -1,27 +1,15 @@
-import streamlit as st
-import pandas as pd
-import pickle
-import shap
-import matplotlib.pyplot as plt
-
-# Load model and scaler
-@st.cache_resource
-def load_model():
-    with open('best_estimator_GA.pkl', 'rb') as f:
-        model = pickle.load(f)
-    with open('scaler.pkl', 'rb') as f:
-        scaler = pickle.load(f)
-    return model, scaler
-
-# Function to generate SHAP plots
 def plot_shap_values(model, X, feature_names):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X)
     
-    st.header("SHAP Force Plot for the First Sample")
-    shap.force_plot(explainer.expected_value[1], shap_values[1][0], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
-    plt.savefig("shap_force_plot.png")
-    st.image("shap_force_plot.png")
+    # 检查shap_values是否有足够的元素
+    if len(shap_values) > 1:
+        st.header("SHAP Force Plot for the First Sample")
+        shap.force_plot(explainer.expected_value[1], shap_values[1][0], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
+        plt.savefig("shap_force_plot.png")
+        st.image("shap_force_plot.png")
+    else:
+        st.error("SHAP values do not have enough elements for the force plot.")
 
 # Streamlit app
 st.title("Assessing Chemical Exposure Risk in Breastfeeding Infants: An Explainable Machine Learning Model for Human Milk Transfer Prediction")
