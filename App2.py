@@ -81,7 +81,7 @@ if uploaded_file is not None:
                     shap_value = shap_values[0]
                     base_value = float(explainer.expected_value)
 
-                # 检查 shap_value 的形状
+                # 确保 shap_value 为一维数组
                 if shap_value.ndim > 1:
                     shap_value = shap_value.flatten()
 
