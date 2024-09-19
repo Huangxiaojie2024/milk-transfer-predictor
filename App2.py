@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
 import shap
 
@@ -26,14 +27,15 @@ def main():
             prediction = model.predict_proba(scaled_data)[:, 1]  # 假设第二列是正类的概率
 
             # 生成SHAP值
-            shap_values = shap.TreeExplainer(model).shap_values(scaled_data)
+            explainer = shap.TreeExplainer(model)
+            shap_values = explainer.shap_values(scaled_data)
 
             # 显示预测概率
-            st.write('Predicted Probability:', prediction)
+            st.write('Predicted Probability:', prediction[0])  # 假设我们只显示第一个样本的预测概率
 
             # 显示SHAP force plot
-            st.subheader('SHAP Force Plot')
-            shap.summary_plot(shap_values, scaled_data, feature_names=data.columns)
+            st.subheader('SHAP Force Plot for the first sample')
+            shap.force_plot(explainer.expected_value[1], shap_values[1][0,:], scaled_data[0,:], feature_names=data.columns)
 
         else:
             st.error('The CSV file must contain exactly 84 features.')
