@@ -4,7 +4,6 @@ import joblib
 import shap
 import matplotlib.pyplot as plt
 import numpy as np
-import plotly.io as pio
 
 # 设置页面标题和布局
 st.set_page_config(page_title="化合物母乳转移预测", layout="wide")
