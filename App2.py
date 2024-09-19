@@ -74,8 +74,8 @@ if uploaded_file is not None:
                 shap_values = explainer.shap_values(single_sample)
 
                 # 提取指定类别和样本的 SHAP 值
-                shap_value = shap_values[0][0]  # (1, 84, 2) -> 选择第一个样本和指定类别的 SHAP 值
-                base_value = float(explainer.expected_value[0])
+                shap_value = shap_values[class_index][0]  # (1, 84) -> 提取样本的 SHAP 值
+                base_value = float(explainer.expected_value[class_index])
 
                 # 创建 SHAP force plot
                 st.subheader(f"SHAP Force Plot - 样本索引 {sample_index}（类别 {class_index}）")
