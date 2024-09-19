@@ -1,63 +1,81 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import shap
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.ensemble import BalancedRandomForestClassifier
-from io import StringIO
+import shap
+import matplotlib.pyplot as plt
+import base64
+import io
 
-# 设置页面标题
+st.set_page_config(page_title="化合物母乳转移预测", layout="wide")
+
 st.title("化合物母乳转移预测")
 
-# 文件上传
-uploaded_file = st.file_uploader("上传包含84个特征的CSV文件", type=["csv"])
+st.write("""
+    上传一个包含84个特征的CSV文件，系统将进行预测并展示结果和解释。
+    - **文件要求**：
+        - 包含84个特征，列名与训练时一致。
+        - 每行代表一个化合物。
+""")
+
+@st.cache_resource
+def load_model():
+    model = joblib.load('best_estimator_GA.pkl')
+    scaler = joblib.load('scaler.pkl')
+    return model, scaler
+
+with st.spinner('加载模型...'):
+    model, scaler = load_model()
+
+uploaded_file = st.file_uploader("选择CSV文件", type=["csv"])
 
 if uploaded_file is not None:
     try:
-        # 读取CSV文件
         data = pd.read_csv(uploaded_file)
-        
+        st.write("上传的数据预览：")
+        st.dataframe(data.head())
+
         # 检查特征数量
         if data.shape[1] != 84:
             st.error(f"CSV文件应包含84个特征，但当前有{data.shape[1]}个特征。")
         else:
-            st.success("文件上传成功！预览数据如下：")
-            st.dataframe(data.head())
-            
-            # 加载Scaler和模型
-            scaler = joblib.load("scaler.pkl")
-            model = joblib.load("best_estimator_GA.pkl")
-            
             # 特征标准化
-            data_scaled = scaler.transform(data)
-            
+            scaled_data = scaler.transform(data)
+            st.success("特征标准化完成。")
+
             # 进行预测
-            probabilities = model.predict_proba(data_scaled)[:, 1]  # 假设正类概率
-            predictions = model.predict(data_scaled)
-            
-            # 添加预测结果到DataFrame
-            data['预测概率'] = probabilities
-            data['预测结果'] = predictions
-            
-            st.subheader("预测结果")
-            st.dataframe(data[['预测概率', '预测结果']].head())
-            
-            # 选择样本进行SHAP分析
-            sample_index = st.number_input(f"选择要查看SHAP力图的样本索引 (0 - {data.shape[0]-1})", min_value=0, max_value=data.shape[0]-1, step=1)
-            
-            if st.button("生成SHAP力图"):
-                # 使用SHAP解释模型
-                explainer = shap.Explainer(model, scaler.transform(data))
-                shap_values = explainer(data_scaled)
-                
-                # 绘制力图
-                st.subheader(f"样本 {sample_index} 的SHAP力图")
+            predictions = model.predict(scaled_data)
+            prediction_proba = model.predict_proba(scaled_data)[:, 1]  # 假设1为正类
+
+            # 显示预测结果
+            result_df = data.copy()
+            result_df['预测结果'] = predictions
+            result_df['预测概率'] = prediction_proba
+
+            st.write("预测结果：")
+            st.dataframe(result_df)
+
+            # 提供下载预测结果的功能
+            csv = result_df.to_csv(index=False)
+            b64 = base64.b64encode(csv.encode()).decode()
+            href = f'<a href="data:file/csv;base64,{b64}" download="预测结果.csv">下载预测结果 CSV 文件</a>'
+            st.markdown(href, unsafe_allow_html=True)
+
+            # 计算和展示SHAP值
+            if st.button("展示SHAP解释"):
+                st.write("计算SHAP值，请稍候...")
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(scaled_data)
+
+                st.write("展示前10个样本的SHAP力图：")
                 shap.initjs()
-                # 使用matplotlib生成力图
-                fig, ax = plt.subplots()
-                shap.force_plot(explainer.expected_value[1], shap_values[sample_index][1], data.iloc[sample_index], matplotlib=True, show=False, ax=ax)
-                st.pyplot(fig, bbox_inches='tight', dpi=300)
-                
+                for i in range(min(10, len(data))):
+                    st.write(f"样本 {i+1} 的SHAP解释：")
+                    # 使用matplotlib绘图
+                    plt.figure()
+                    shap.force_plot(explainer.expected_value[1], shap_values[1][i], data.iloc[i], matplotlib=True, show=False)
+                    st.pyplot(bbox_inches='tight', dpi=300)
+                    plt.clf()
     except Exception as e:
-        st.error(f"发生错误: {e}")
+        st.error(f"文件处理失败：{e}")
