@@ -34,7 +34,8 @@ if uploaded_file:
 
         # SHAP力图展示第一个实例（类别1）
         st.write("第一个实例的SHAP力图（类别1）：")
-        force_plot = shap.force_plot(explainer.expected_value[1], shap_values[1][0,:], scaled_data[0, :])
+        # 如果是二分类，shap_values[1] 表示类别1的SHAP值
+        force_plot = shap.force_plot(explainer.expected_value[1], shap_values[1][0, :], scaled_data[0, :])
 
         # 显示SHAP力图
         st_shap(force_plot)
