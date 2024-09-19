@@ -32,7 +32,7 @@ model, scaler = load_model_and_scaler()
 
 # 定义一个辅助函数来在 Streamlit 中显示 SHAP 图
 def st_shap(plot, height=None):
-    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+    shap_html = f"<head>{shap.getjs()}</head><body>{plot}</body>"
     components.html(shap_html, height=height)
 
 # 主函数
@@ -90,15 +90,31 @@ def main():
                 expected_value = explainer.expected_value
                 shap_value = shap_values[0, :]
 
+            # 添加样本选择
+            if data.shape[0] > 1:
+                sample_idx = st.slider('选择要查看的样本', 1, data.shape[0], 1) - 1  # 从0开始索引
+            else:
+                sample_idx = 0
+
+            # 获取选择的样本
+            selected_data = data.iloc[sample_idx, :]
+            if isinstance(shap_values, list) and len(shap_values) > 1:
+                selected_shap_value = shap_values[1][sample_idx, :]
+                selected_expected_value = explainer.expected_value[1]
+            else:
+                selected_shap_value = shap_values[0][sample_idx, :]
+                selected_expected_value = explainer.expected_value
+
             # 显示SHAP力量图
             st.subheader('SHAP 力量图')
-            st.write('以下是第一个样本的SHAP力量图：')
+            st.write(f'以下是样本 {sample_idx + 1} 的SHAP力量图：')
 
             # 生成SHAP力量图
-            force_plot = shap.force_plot(
-                expected_value,  # 期望值
-                shap_value,      # 第一个样本的SHAP值
-                data.iloc[0, :]   # 第一个样本的原始特征值
+            force_plot = shap.plots.force(
+                base_value=selected_expected_value, 
+                shap_values=selected_shap_value, 
+                features=selected_data,
+                matplotlib=False  # 使用JS绘图
             )
 
             # 在Streamlit中显示SHAP力量图
