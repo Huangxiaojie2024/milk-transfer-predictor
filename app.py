@@ -71,25 +71,32 @@ if uploaded_file is not None:
 
                 # 使用 SHAP 解释模型
                 explainer = shap.TreeExplainer(model)
-                shap_values = explainer.shap_values(scaled_data)
+                shap_values = explainer.shap_values(single_sample)
 
                 # 提取指定类别和样本的 SHAP 值
-                shap_value = shap_values[sample_index,:,class_index]  # 提取类别对应的 SHAP 值
-                base_value = explainer.expected_value[class_index]
+                shap_value = shap_values[sample_index-1,:,class_index]  # 提取类别对应的 SHAP 值
+                base_value = float(explainer.expected_value[class_index])
 
                 # 创建 SHAP force plot
                 st.subheader(f"SHAP Force Plot - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()  # 初始化 JavaScript 库
 
-                # 生成 force plot
+                # 生成 force plot 并保存为 HTML
                 force_plot = shap.force_plot(
-                    base_value, shap_value, single_sample[0],
-                    feature_names=data.columns, matplotlib=True
+                    base_value,
+                    shap_value,
+                    single_sample[0],
+                    feature_names=data.columns,
+                    matplotlib=False
                 )
 
                 # 保存为 HTML 文件
                 html_file = f"force_plot_{sample_index}.html"
-                components.html(shap.save_html(html_file, force_plot), height=500, scrolling=True)
+                shap.save_html(html_file, force_plot)
+
+                # 在 Streamlit 中显示 HTML
+                with open(html_file) as f:
+                    components.html(f.read(), height=500, scrolling=True)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
