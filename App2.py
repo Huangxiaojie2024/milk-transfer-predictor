@@ -74,16 +74,8 @@ if uploaded_file is not None:
                 shap_values = explainer.shap_values(single_sample)
 
                 # 提取指定类别和样本的 SHAP 值
-                if isinstance(shap_values, list):
-                    shap_value = shap_values[class_index][0]  # shape 应为 (84,)
-                    base_value = float(explainer.expected_value[class_index])
-                else:
-                    shap_value = shap_values[0]
-                    base_value = float(explainer.expected_value)
-
-                # 确保 shap_value 为一维数组
-                if shap_value.ndim > 1:
-                    shap_value = shap_value.flatten()
+                shap_value = shap_values[0][0]  # (1, 84, 2) -> 选择第一个样本和指定类别的 SHAP 值
+                base_value = float(explainer.expected_value[0])
 
                 # 创建 SHAP force plot
                 st.subheader(f"SHAP Force Plot - 样本索引 {sample_index}（类别 {class_index}）")
