@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 import shap
-import matplotlib.pyplot as plt
 import numpy as np
 
 # 设置页面标题和布局
@@ -29,7 +28,7 @@ uploaded_file = st.sidebar.file_uploader("上传包含84个特征的CSV文件", 
 if uploaded_file is not None:
     try:
         data = pd.read_csv(uploaded_file)
-        
+
         # 检查是否包含84个特征
         if data.shape[1] != 84:
             st.error(f"上传的文件包含 {data.shape[1]} 个特征，预期需要84个特征。请检查文件。")
@@ -75,10 +74,10 @@ if uploaded_file is not None:
 
                 # 获取指定类别的 SHAP 值
                 if isinstance(shap_values, list):
-                    shap_value = shap_values[class_index]  # 选择对应类别的 SHAP 值
+                    shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
                     base_value = explainer.expected_value[class_index]
                 else:
-                    shap_value = shap_values
+                    shap_value = shap_values[0]
                     base_value = explainer.expected_value
 
                 # 创建 shap.Explanation 对象
