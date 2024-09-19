@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 # Set page title and layout
 st.set_page_config(page_title="Prediction of Chemical Transfer to Breast Milk", layout="wide")
 
-st.title("Chemical Transfer Prediction Application")
+st.title("Chemical Transfer Predictor for Breast Milk")
 
 # Load model and scaler
 @st.cache_resource
@@ -45,7 +45,7 @@ if uploaded_file is not None:
 
             # Prediction probabilities
             probabilities = model.predict_proba(scaled_data)
-            prob_df = pd.DataFrame(probabilities, columns=["Probability_0", "Probability_1"])
+            prob_df = pd.DataFrame(probabilities, columns=["Probability_0(low-risk)", "Probability_1(high-risk)"])
             st.subheader("Prediction Probabilities")
             st.dataframe(prob_df.head())
 
