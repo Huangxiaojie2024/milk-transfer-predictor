@@ -3,6 +3,8 @@ import pandas as pd
 import joblib
 import shap
 import matplotlib.pyplot as plt
+from sklearn.ensemble import BalancedRandomForestClassifier
+import numpy as np
 
 # 设置页面标题和布局
 st.set_page_config(page_title="化合物母乳转移预测", layout="wide")
@@ -38,15 +40,19 @@ if uploaded_file is not None:
 
             # 特征标准化
             scaled_data = scaler.transform(data)
+            scaled_df = pd.DataFrame(scaled_data, columns=data.columns)
             st.subheader("标准化后的特征预览")
-            st.dataframe(pd.DataFrame(scaled_data, columns=data.columns).head())
+            st.dataframe(scaled_df.head())
 
             # 预测概率
             probabilities = model.predict_proba(scaled_data)
-            data["Probability_0"] = probabilities[:, 0]
-            data["Probability_1"] = probabilities[:, 1]
+            prob_df = pd.DataFrame(probabilities, columns=["Probability_0", "Probability_1"])
             st.subheader("预测概率")
-            st.dataframe(data[["Probability_0", "Probability_1"]].head())
+            st.dataframe(prob_df.head())
+
+            # 合并原始数据和预测概率（可选）
+            # combined_df = pd.concat([data, prob_df], axis=1)
+            # st.dataframe(combined_df.head())
 
             # 选择要查看 SHAP 力图的样本
             st.sidebar.header("SHAP 力图选项")
@@ -60,14 +66,17 @@ if uploaded_file is not None:
 
             if st.sidebar.button("显示 SHAP 力图"):
                 # 使用 SHAP 解释模型
-                explainer = shap.Explainer(model, scaler.transform(data))
+                # 仅使用标准化后的特征进行解释
+                explainer = shap.Explainer(model, scaled_data)
                 shap_values = explainer(scaled_data)
 
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}")
                 shap.initjs()
-                fig, ax = plt.subplots()
-                shap.plots._waterfall.waterfall_legacy(shap_values[sample_index], max_display=10, show=False)
+                
+                # 使用 SHAP 的 Matplotlib 绘图接口
+                fig, ax = plt.subplots(figsize=(10, 5))
+                shap.plots.waterfall(shap_values[sample_index], max_display=10, show=False)
                 st.pyplot(fig)
 
     except Exception as e:
