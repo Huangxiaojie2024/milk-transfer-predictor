@@ -67,40 +67,34 @@ if uploaded_file is not None:
             )
 
             if st.sidebar.button("显示 SHAP 力图"):
-                try:
-                    # 选择单个样本
-                    single_sample = scaled_data[sample_index].reshape(1, -1)
+                # 选择单个样本
+                single_sample = scaled_data[sample_index].reshape(1, -1)
 
-                    # 使用 TreeExplainer
-                    explainer = shap.TreeExplainer(model)
-                    shap_values = explainer.shap_values(single_sample)
+                # 使用 TreeExplainer
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(single_sample)
 
-                    # 对于二分类模型，shap_values 是一个包含两个数组的列表，分别对应类别0和类别1
-                    if isinstance(shap_values, list):
-                        shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
-                        base_value = explainer.expected_value[class_index]
-                    else:
-                        # 对于单输出模型
-                        shap_value = shap_values[sample_index]
-                        base_value = explainer.expected_value
+                # 对于二分类模型，shap_values 是一个包含两个数组的列表，分别对应类别0和类别1
+                if isinstance(shap_values, list):
+                    shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
+                    base_value = explainer.expected_value[class_index]
+                else:
+                    # 对于单输出模型
+                    shap_value = shap_values[sample_index]
+                    base_value = explainer.expected_value
 
-                    # 创建 SHAP 力图（force plot）
-                    force_plot = shap.force_plot(
-                        base_value,
-                        shap_value,
-                        single_sample,
-                        feature_names=data.columns,
-                        matplotlib=False
-                    )
+                # 创建 SHAP 力图（force plot）
+                force_plot = shap.force_plot(
+                    base_value,
+                    shap_value,
+                    single_sample,
+                    feature_names=data.columns,
+                    matplotlib=False
+                )
 
-                    # 在 Streamlit 中显示 SHAP 力图
-                    st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
-                    components.html(shap.get_html(force_plot), height=300, scrolling=True)
-                
-                except Exception as shap_error:
-                    st.error(f"SHAP 力图生成错误: {shap_error}")
+                # 在 Streamlit 中显示 SHAP 力图
+                st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
+                components.html(shap.get_html(force_plot), height=300, scrolling=True)
 
-except Exception as e:
-    st.error(f"文件处理出现错误: {e}")
 else:
     st.info("请在左侧上传一个包含84个特征的CSV文件。")
