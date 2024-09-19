@@ -85,7 +85,7 @@ if uploaded_file is not None:
                 force_plot = shap.force_plot(
                     base_value,
                     shap_value,
-                    single_sample[0],
+                    single_sample[sample_index],
                     feature_names=data.columns,
                     matplotlib=False
                 )
