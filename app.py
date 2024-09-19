@@ -18,11 +18,28 @@ def load_model():
 def plot_shap_values(model, X, feature_names):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X)
-    
+
+    # 输出 shap_values 和 expected_value 的形状
+    st.write(f"SHAP values shape: {len(shap_values)}")
+    st.write(f"Expected value shape: {len(explainer.expected_value)}")
+
     st.header("SHAP Force Plot for the First Sample")
-    shap.force_plot(explainer.expected_value[1], shap_values[1][0], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
-    plt.savefig("shap_force_plot.png")
-    st.image("shap_force_plot.png")
+
+    # 确保 X 中有至少一个样本
+    if X.shape[0] > 0:
+        # 检查 shap_values 的长度，以防止超出索引
+        if len(shap_values) > 1:
+            # 生成类别 1 的 SHAP 力图
+            shap.force_plot(explainer.expected_value[1], shap_values[1][0], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
+        else:
+            # 如果只有一个类别，生成类别 0 的 SHAP 力图
+            st.write("Only one class found, generating SHAP plot for class 0.")
+            shap.force_plot(explainer.expected_value[0], shap_values[0][0], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
+
+        plt.savefig("shap_force_plot.png")
+        st.image("shap_force_plot.png")
+    else:
+        st.error("Input data is empty or does not have enough rows.")
 
 # Streamlit app
 st.title("Assessing Chemical Exposure Risk in Breastfeeding Infants: An Explainable Machine Learning Model for Human Milk Transfer Prediction")
