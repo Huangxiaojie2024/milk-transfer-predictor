@@ -3,6 +3,7 @@ import pandas as pd
 import joblib
 import shap
 import matplotlib.pyplot as plt
+from sklearn.ensemble import BalancedRandomForestClassifier
 import numpy as np
 
 # 设置页面标题和布局
@@ -49,10 +50,6 @@ if uploaded_file is not None:
             st.subheader("预测概率")
             st.dataframe(prob_df.head())
 
-            # 合并原始数据和预测概率（可选）
-            # combined_df = pd.concat([data, prob_df], axis=1)
-            # st.dataframe(combined_df.head())
-
             # 选择要查看 SHAP 力图的样本
             st.sidebar.header("SHAP 力图选项")
             sample_index = st.sidebar.number_input(
@@ -65,17 +62,27 @@ if uploaded_file is not None:
 
             if st.sidebar.button("显示 SHAP 力图"):
                 # 使用 SHAP 解释模型
-                # 仅使用标准化后的特征进行解释
                 explainer = shap.Explainer(model, scaled_data)
                 shap_values = explainer(scaled_data)
+                
+                # 选择要解释的类别（例如类别1）
+                class_index = 1  # 0或1，根据需要选择
+
+                # 检查 SHAP 值的结构
+                if isinstance(shap_values, list):
+                    # 多类分类
+                    shap_value = shap_values[class_index][sample_index]
+                else:
+                    # 二分类，可能只有一个解释
+                    shap_value = shap_values[sample_index][class_index]
 
                 # 绘制 SHAP 力图
-                st.subheader(f"SHAP 力图 - 样本索引 {sample_index}")
+                st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
                 
                 # 使用 SHAP 的 Matplotlib 绘图接口
                 fig, ax = plt.subplots(figsize=(10, 5))
-                shap.plots.waterfall(shap_values[sample_index], max_display=10, show=False)
+                shap.plots.waterfall(shap_value, max_display=10, show=False)
                 st.pyplot(fig)
 
     except Exception as e:
