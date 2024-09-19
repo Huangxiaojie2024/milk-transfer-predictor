@@ -3,6 +3,7 @@ import pandas as pd
 import joblib
 import shap
 import matplotlib.pyplot as plt
+from sklearn.ensemble import BalancedRandomForestClassifier
 import numpy as np
 
 # 设置页面标题和布局
@@ -58,32 +59,50 @@ if uploaded_file is not None:
                 value=0,
                 step=1
             )
+            class_index = st.sidebar.selectbox(
+                "选择要解释的类别",
+                options=[0, 1],
+                index=1,  # 默认选择类别1
+                format_func=lambda x: f"类别 {x}"
+            )
 
             if st.sidebar.button("显示 SHAP 力图"):
+                # 选择单个样本
+                single_sample = scaled_data[sample_index].reshape(1, -1)
+
                 # 使用 SHAP 解释模型
-                explainer = shap.Explainer(model, scaled_data)
-                shap_values = explainer(scaled_data)
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(single_sample)
                 
-                # 选择要解释的类别（例如类别1）
-                class_index = 1  # 0或1，根据需要选择
-
-                # 检查 SHAP 值的结构
+                # 对于二分类模型，shap_values 通常是一个列表，包含两个数组，分别对应每个类别
                 if isinstance(shap_values, list):
-                    # 多类分类
-                    shap_value = shap_values[class_index][sample_index]
+                    shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
+                    base_value = explainer.expected_value[class_index]
                 else:
-                    # 二分类，可能只有一个解释
-                    shap_value = shap_values[sample_index][class_index]
+                    shap_value = shap_values[0]
+                    base_value = explainer.expected_value
 
+                # 创建 shap.Explanation 对象
+                shap_expl = shap.Explanation(
+                    values=shap_value,
+                    base_values=base_value,
+                    data=single_sample[0],
+                    feature_names=data.columns
+                )
+                
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
                 
-                # 使用 SHAP 的 Matplotlib 绘图接口
+                # 创建 Matplotlib 图形
                 fig, ax = plt.subplots(figsize=(10, 5))
-                shap.plots.waterfall(shap_value, max_display=10, show=False)
+                
+                # 绘制 waterfall 力图
+                shap.plots.waterfall(shap_expl, max_display=10, show=False)
+                
+                # 显示图形
                 st.pyplot(fig)
-
+    
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
 else:
