@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 import shap
 import matplotlib.pyplot as plt
+from imblearn.ensemble import BalancedRandomForestClassifier
 
 # Load model and scaler
 @st.cache_resource
