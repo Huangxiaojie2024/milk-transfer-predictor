@@ -75,20 +75,42 @@ def main():
             explainer = shap.TreeExplainer(model)
             shap_values = explainer.shap_values(X_scaled)
 
+            # 调试信息：检查shap_values的结构和形状
+            st.subheader('调试信息')
+            st.write(f"shap_values 类型: {type(shap_values)}")
+            if isinstance(shap_values, list):
+                st.write(f"shap_values 是一个列表，长度: {len(shap_values)}")
+                for i, sv in enumerate(shap_values):
+                    st.write(f"类别 {i} 的 SHAP 值形状: {sv.shape}")
+            else:
+                st.write(f"shap_values 的形状: {shap_values.shape}")
+
             # 检查shap_values的结构
             if isinstance(shap_values, list):
                 # 多类别情况，选择第二个类别（索引1）
                 if len(shap_values) > 1:
                     expected_value = explainer.expected_value[1]
                     shap_value = shap_values[1][0, :]
+                    st.write("使用类别1的 SHAP 值。")
                 else:
                     # 只有一个类别
                     expected_value = explainer.expected_value[0]
                     shap_value = shap_values[0][0, :]
+                    st.write("使用类别0的 SHAP 值。")
             else:
                 # 单数组情况
                 expected_value = explainer.expected_value
                 shap_value = shap_values[0, :]
+                st.write("shap_values 是一个单一数组。")
+
+            # 显示 SHAP 值和特征数量
+            st.write(f"shap_value 的长度: {len(shap_value)}")
+            st.write(f"特征数量: {data.shape[1]}")
+
+            # 检查长度是否匹配
+            if len(shap_value) != data.shape[1]:
+                st.error(f"shap_values 的长度 ({len(shap_value)}) 与特征数量 ({data.shape[1]}) 不匹配！")
+                st.stop()
 
             # 添加样本选择
             if data.shape[0] > 1:
@@ -98,12 +120,21 @@ def main():
 
             # 获取选择的样本
             selected_data = data.iloc[sample_idx, :]
+
             if isinstance(shap_values, list) and len(shap_values) > 1:
                 selected_shap_value = shap_values[1][sample_idx, :]
                 selected_expected_value = explainer.expected_value[1]
             else:
                 selected_shap_value = shap_values[0][sample_idx, :]
                 selected_expected_value = explainer.expected_value
+
+            # 再次检查长度
+            st.write(f"selected_shap_value 的长度: {len(selected_shap_value)}")
+            st.write(f"selected_data 的长度: {len(selected_data)}")
+
+            if len(selected_shap_value) != selected_data.shape[0]:
+                st.error(f"selected_shap_value 的长度 ({len(selected_shap_value)}) 与特征数量 ({selected_data.shape[0]}) 不匹配！")
+                st.stop()
 
             # 显示SHAP力量图
             st.subheader('SHAP 力量图')
