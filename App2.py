@@ -23,12 +23,13 @@ def preprocess_input(csv_file, scaler):
     scaled_data = scaler.transform(input_data)
     return scaled_data
 
-# 生成单个样本的 SHAP force plot
 def plot_shap_force(model, data, index=0):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(data)
     st.write(f"样本 {index+1} 的 SHAP Force Plot")
-    shap.force_plot(explainer.expected_value[1], shap_values[1][index], data[index], matplotlib=True)
+    
+    # 修改为直接使用 shap_values，而不是 shap_values[1]
+    shap.force_plot(explainer.expected_value, shap_values[index], data[index], matplotlib=True)
     plt.tight_layout()
     st.pyplot()
 
