@@ -2,51 +2,39 @@ import streamlit as st
 import pandas as pd
 import pickle
 import shap
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
+import numpy as np
 
-# 加载模型和标准化器
-@st.cache_resource
-def load_model():
-    with open('best_estimator_GA.pkl', 'rb') as model_file:
-        model = pickle.load(model_file)
-    with open('scaler.pkl', 'rb') as scaler_file:
-        scaler = pickle.load(scaler_file)
-    return model, scaler
+# 加载模型和标准化工具
+with open('best_estimator_GA.pkl', 'rb') as model_file:
+    model = pickle.load(model_file)
+with open('scaler.pkl', 'rb') as scaler_file:
+    scaler = pickle.load(scaler_file)
 
-# 读取CSV文件并进行标准化
-def preprocess_input(csv_file, scaler):
-    input_data = pd.read_csv(csv_file)
-    if input_data.shape[1] != 84:
-        st.error("CSV文件必须包含84个特征")
-        return None
-    scaled_data = scaler.transform(input_data)
-    return scaled_data
+# 创建Streamlit界面
+st.title('Compound Transfer Prediction in Breast Milk')
 
-# 生成单个样本的 SHAP force plot
-def plot_shap_force(model, data, index=0):
-    explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(data)
-    st.write(f"样本 {index+1} 的 SHAP Force Plot")
-    shap.force_plot(explainer.expected_value[1], shap_values[1][index], data[index], matplotlib=True)
-    plt.tight_layout()
-    st.pyplot()
-
-# Streamlit 应用程序的布局
-st.title('化合物母乳转移预测')
-st.write('请上传一个包含84个特征的CSV文件')
-
-uploaded_file = st.file_uploader("上传CSV文件", type="csv")
-
+# 上传CSV文件
+uploaded_file = st.file_uploader("Upload your CSV file with 84 features", type=['csv'])
 if uploaded_file is not None:
-    model, scaler = load_model()
-    input_data = preprocess_input(uploaded_file, scaler)
+    # 读取CSV文件
+    data = pd.read_csv(uploaded_file)
     
-    if input_data is not None:
-        # 预测概率
-        prediction_proba = model.predict_proba(input_data)
-        st.write(f"预测的母乳转移概率为：{prediction_proba[:, 1]}")
-
-        # 生成每个样本的 SHAP force plot
-        for i in range(min(len(input_data), 5)):  # 只显示前5个样本的force plot
-            plot_shap_force(model, input_data, index=i)
+    # 特征标准化
+    scaled_data = scaler.transform(data)
+    
+    # 进行预测
+    probabilities = model.predict_proba(scaled_data)
+    
+    # 显示预测概率
+    st.write(f'Probabilities: {probabilities}')
+    
+    # 创建SHAP解释器
+    explainer = shap.Explainer(model.predict_proba, scaled_data)
+    shap_values = explainer(scaled_data)
+    
+    # 选择类别1的SHAP值
+    shap_values_class_1 = shap_values[:, 1]  # 假设类别1的概率是第二列
+    
+    # 显示SHAP force plot
+    st.write(shap.plots.force(shap_values_class_1, scaled_data, feature_names=data.columns, show=False))
+    st.pyplot()
