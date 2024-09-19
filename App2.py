@@ -39,8 +39,13 @@ if uploaded_file:
         # 选择类别1的 SHAP 值
         st.write("类别 1 的 SHAP 瀑布图（第一条样本）:")
 
+        # 创建 Explanation 对象
+        shap_value_instance = shap.Explanation(values=shap_values[1][0], 
+                                               base_values=explainer.expected_value[1], 
+                                               data=scaled_data[0, :], 
+                                               feature_names=input_data.columns)
+
         # 绘制瀑布图，选择类别1
-        shap_value_instance = shap_values[1][0]  # 选择第一条样本的 SHAP 值
         fig, ax = plt.subplots()
         shap.plots.waterfall(shap_value_instance)
         st.pyplot(fig)
