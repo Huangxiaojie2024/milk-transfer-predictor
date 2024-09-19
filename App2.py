@@ -1,3 +1,19 @@
+import streamlit as st
+import pandas as pd
+import pickle
+import shap
+import matplotlib.pyplot as plt
+
+# Load model and scaler
+@st.cache_resource
+def load_model():
+    with open('best_estimator_GA.pkl', 'rb') as f:
+        model = pickle.load(f)
+    with open('scaler.pkl', 'rb') as f:
+        scaler = pickle.load(f)
+    return model, scaler
+
+# Function to generate SHAP plots
 def plot_shap_values(model, X, feature_names):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X)
