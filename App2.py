@@ -53,10 +53,10 @@ if uploaded_file is not None:
             # 选择要查看 SHAP 力图的样本
             st.sidebar.header("SHAP 力图选项")
             sample_index = st.sidebar.number_input(
-                "选择样本索引（从1开始）",
-                min_value=1,
-                max_value=len(data),
-                value=1,
+                "选择样本索引（从0开始）",
+                min_value=0,
+                max_value=len(data)-1,
+                value=0,
                 step=1
             )
             class_index = st.sidebar.selectbox(
