@@ -72,10 +72,10 @@ if uploaded_file is not None:
                 # 使用 SHAP 解释模型
                 explainer = shap.TreeExplainer(model)
                 shap_values = explainer.shap_values(single_sample)
-                
-                # 对于二分类模型，shap_values 通常是一个列表，包含两个数组，分别对应每个类别
+
+                # 获取指定类别的 SHAP 值
                 if isinstance(shap_values, list):
-                    shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
+                    shap_value = shap_values[class_index]  # 选择对应类别的 SHAP 值
                     base_value = explainer.expected_value[class_index]
                 else:
                     shap_value = shap_values
