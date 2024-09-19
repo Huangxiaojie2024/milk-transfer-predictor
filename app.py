@@ -30,7 +30,7 @@ def plot_shap_values(model, X, feature_names):
         if len(shap_values) > 1:
             # 确保 SHAP 值的维度与特征数一致
             if shap_values[1][0].shape[0] == X.shape[1]:
-                shap.force_plot(explainer.expected_value[1], shap_values[1][0], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
+                shap.force_plot(explainer.expected_value[1], shap_values[1][0], X.iloc[0, :], feature_names=feature_names)
             else:
                 st.error("Mismatch between the number of features and SHAP values for class 1.")
         else:
