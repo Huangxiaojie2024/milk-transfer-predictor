@@ -44,7 +44,7 @@ if uploaded_file is not None:
         # 使用新的force_plot方法
         for i in range(len(data)):
             fig = plt.figure()
-            shap.plots.force(explainer.expected_value, shap_values[i], matplotlib=True)
+            shap.plots.force(explainer.expected_value, shap_values, matplotlib=True)
             plt.savefig(f'shap_force_plot_{i}.png')  # 保存每个实例的SHAP force plot
             st.image(f'shap_force_plot_{i}.png')  # 显示SHAP force plot
             plt.clf()  # 清理当前图像
