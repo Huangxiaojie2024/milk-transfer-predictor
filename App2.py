@@ -125,7 +125,7 @@ def main():
                 selected_shap_value = shap_values[1][sample_idx, :]
                 selected_expected_value = explainer.expected_value[1]
             else:
-                selected_shap_value = shap_values[0][sample_idx, :]
+                selected_shap_value = shap_values[1][sample_idx, :]
                 selected_expected_value = explainer.expected_value
 
             # 再次检查长度
