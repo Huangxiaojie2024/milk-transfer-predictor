@@ -35,7 +35,7 @@ if uploaded_file:
 
         # SHAP force plot for class 1
         st.write("SHAP Force Plot for the first instance (Class 1):")
-        shap.force_plot(explainer.expected_value[1], shap_values[1][0], scaled_data[0, :], matplotlib=True)
+        shap.force_plot(explainer.expected_value, shap_values[0], scaled_data[0, :], matplotlib=True)
         plt.tight_layout()
         st.pyplot(plt)
     else:
