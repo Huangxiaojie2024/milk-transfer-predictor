@@ -85,14 +85,6 @@ if uploaded_file is not None:
                 if shap_value.ndim > 1:
                     shap_value = shap_value.flatten()
 
-                # 调试信息（可选）
-                st.write(f"shap_values 类型: {type(shap_values)}")
-                if isinstance(shap_values, list):
-                    st.write(f"每个类别的 shap_values 形状: {[sv.shape for sv in shap_values]}")
-                else:
-                    st.write(f"shap_values 形状: {shap_values.shape}")
-                st.write(f"base_value 类型: {type(base_value)}, 值: {base_value}")
-
                 # 创建 SHAP force plot
                 st.subheader(f"SHAP Force Plot - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
