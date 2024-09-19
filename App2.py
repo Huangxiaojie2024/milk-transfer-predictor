@@ -31,8 +31,9 @@ def plot_shap_force(explainer, shap_values, data_scaled, feature_names):
     # Initialize JavaScript visualization library
     shap.initjs()
     # Create the SHAP force plot for the positive class
-    force_plot = shap.force_plot(explainer.expected_value[1], shap_values[1], feature_names)
+    force_plot = shap.force_plot(explainer.expected_value, shap_values, feature_names)
     return force_plot
+
 
 def main():
     st.title('Chemical Compound Breast Milk Transfer Prediction')
