@@ -20,7 +20,7 @@ def plot_shap_values(model, X, feature_names):
     shap_values = explainer.shap_values(X)
     
     st.header("SHAP Force Plot for the First Sample")
-    shap.force_plot(explainer.expected_value[1], shap_values[1][0], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
+    shap.force_plot(explainer.expected_value[1], shap_values[1], X.iloc[0, :], feature_names=feature_names, matplotlib=True)
     plt.savefig("shap_force_plot.png")
     st.image("shap_force_plot.png")
 
