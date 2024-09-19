@@ -78,7 +78,7 @@ if uploaded_file is not None:
                     shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
                     base_value = explainer.expected_value[class_index]
                 else:
-                    shap_value = shap_values[0]
+                    shap_value = shap_values
                     base_value = explainer.expected_value
 
                 # 创建 shap.Explanation 对象
@@ -92,16 +92,8 @@ if uploaded_file is not None:
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
+                shap.plots.waterfall(shap_expl, max_display=10)
 
-                # 创建 Matplotlib 图形
-                fig, ax = plt.subplots(figsize=(10, 5))
-                
-                # 绘制 waterfall 力图
-                shap.plots.waterfall(shap_expl, max_display=10, show=False, ax=ax)
-                
-                # 显示图形
-                st.pyplot(fig)
-    
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
 else:
