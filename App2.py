@@ -72,13 +72,17 @@ if uploaded_file is not None:
                 explainer = shap.TreeExplainer(model)
                 shap_values = explainer.shap_values(single_sample)
 
-                # 获取指定类别的 SHAP 值
+                # 提取指定类别和样本的 SHAP 值
                 if isinstance(shap_values, list):
-                    shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
+                    shap_value = shap_values[class_index][0]  # shape 应为 (84,)
                     base_value = explainer.expected_value[class_index]
                 else:
                     shap_value = shap_values[0]
                     base_value = explainer.expected_value
+
+                # 检查 shap_value 的形状
+                if shap_value.ndim > 1:
+                    shap_value = shap_value.flatten()
 
                 # 创建 shap.Explanation 对象
                 shap_expl = shap.Explanation(
@@ -87,11 +91,13 @@ if uploaded_file is not None:
                     data=single_sample[0],
                     feature_names=data.columns
                 )
-                
+
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
-                shap.plots.waterfall(shap_expl)
+                # 使用 `st.pyplot` 显示图像
+                fig = shap.plots.waterfall(shap_expl, show=False)
+                st.pyplot(fig)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
