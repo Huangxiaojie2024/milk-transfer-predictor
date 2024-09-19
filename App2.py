@@ -47,50 +47,65 @@ def main():
     uploaded_file = st.file_uploader('选择一个CSV文件', type='csv')
 
     if uploaded_file is not None:
-        # 读取上传的CSV文件
-        data = pd.read_csv(uploaded_file)
+        try:
+            # 读取上传的CSV文件
+            data = pd.read_csv(uploaded_file)
 
-        # 检查是否包含84个特征
-        if data.shape[1] != 84:
-            st.error(f'上传的文件包含 {data.shape[1]} 个特征，必须包含84个特征。')
-            return
+            # 检查是否包含84个特征
+            if data.shape[1] != 84:
+                st.error(f'上传的文件包含 {data.shape[1]} 个特征，必须包含84个特征。')
+                return
 
-        # 显示原始数据
-        st.subheader('原始数据')
-        st.write(data.head())
+            # 显示原始数据
+            st.subheader('原始数据')
+            st.write(data.head())
 
-        # 特征标准化
-        X_scaled = scaler.transform(data)
+            # 特征标准化
+            X_scaled = scaler.transform(data)
 
-        # 预测概率
-        probabilities = model.predict_proba(X_scaled)[:, 1]  # 获取类别1的概率
+            # 预测概率
+            probabilities = model.predict_proba(X_scaled)[:, 1]  # 获取类别1的概率
 
-        # 显示预测结果
-        st.subheader('预测结果')
-        for idx, prob in enumerate(probabilities):
-            st.write(f'样本 {idx + 1} 的转移概率: {prob:.4f}')
+            # 显示预测结果
+            st.subheader('预测结果')
+            for idx, prob in enumerate(probabilities):
+                st.write(f'样本 {idx + 1} 的转移概率: {prob:.4f}')
 
-        # 计算SHAP值
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(X_scaled)
+            # 计算SHAP值
+            explainer = shap.TreeExplainer(model)
+            shap_values = explainer.shap_values(X_scaled)
 
-        # 显示SHAP力量图
-        st.subheader('SHAP 力量图')
-        st.write('以下是第一个样本的SHAP力量图：')
+            # 检查shap_values的结构
+            if isinstance(shap_values, list):
+                # 多类别情况，选择第二个类别（索引1）
+                if len(shap_values) > 1:
+                    expected_value = explainer.expected_value[1]
+                    shap_value = shap_values[1][0, :]
+                else:
+                    # 只有一个类别
+                    expected_value = explainer.expected_value[0]
+                    shap_value = shap_values[0][0, :]
+            else:
+                # 单数组情况
+                expected_value = explainer.expected_value
+                shap_value = shap_values[0, :]
 
-        # 初始化JavaScript可视化
-        shap.initjs()
+            # 显示SHAP力量图
+            st.subheader('SHAP 力量图')
+            st.write('以下是第一个样本的SHAP力量图：')
 
-        # 生成SHAP力量图
-        force_plot = shap.force_plot(
-            explainer.expected_value[1],  # 类别1的期望值
-            shap_values[1][0, :],         # 第一个样本的SHAP值
-            data.iloc[0, :]               # 第一个样本的原始特征值
-        )
+            # 生成SHAP力量图
+            force_plot = shap.force_plot(
+                expected_value,  # 期望值
+                shap_value,      # 第一个样本的SHAP值
+                data.iloc[0, :]   # 第一个样本的原始特征值
+            )
 
-        # 在Streamlit中显示SHAP力量图
-        st_shap(force_plot)
+            # 在Streamlit中显示SHAP力量图
+            st_shap(force_plot, height=300)
 
+        except Exception as e:
+            st.error(f"发生错误: {e}")
     else:
         st.info('请上传一个CSV文件以继续。')
 
