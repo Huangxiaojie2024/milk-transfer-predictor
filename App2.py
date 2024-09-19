@@ -3,6 +3,7 @@ import pandas as pd
 import joblib
 import shap
 import numpy as np
+import streamlit.components.v1 as components
 
 # 设置页面标题和布局
 st.set_page_config(page_title="化合物母乳转移预测", layout="wide")
@@ -84,21 +85,29 @@ if uploaded_file is not None:
                 if shap_value.ndim > 1:
                     shap_value = shap_value.flatten()
 
-                # 创建 shap.Explanation 对象
-                shap_expl = shap.Explanation(
-                    values=shap_value,
-                    base_values=base_value,
-                    data=single_sample[0],
-                    feature_names=data.columns
+                # 调试信息（可选）
+                st.write(f"shap_values 类型: {type(shap_values)}")
+                if isinstance(shap_values, list):
+                    st.write(f"每个类别的 shap_values 形状: {[sv.shape for sv in shap_values]}")
+                else:
+                    st.write(f"shap_values 形状: {shap_values.shape}")
+                st.write(f"base_value 类型: {type(base_value)}, 值: {base_value}")
+
+                # 创建 SHAP force plot
+                st.subheader(f"SHAP Force Plot - 样本索引 {sample_index}（类别 {class_index}）")
+                shap.initjs()
+
+                # 生成 force plot 并保存为 HTML
+                force_plot = shap.force_plot(
+                    base_value,
+                    shap_value,
+                    single_sample[0],
+                    feature_names=data.columns,
+                    matplotlib=False
                 )
 
-                # 绘制 SHAP 力图
-                st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
-                shap.initjs()
-                
-                # 使用 `shap.plots.waterfall` 并显示为 Plotly 图
-                fig = shap.plots.waterfall(shap_expl, show=False)
-                st.plotly_chart(fig)
+                # 将 force plot 渲染为 HTML 并在 Streamlit 中显示
+                components.html(force_plot.html(), height=500, scrolling=True)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
