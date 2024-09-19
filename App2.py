@@ -41,7 +41,6 @@ if uploaded_file:
 
         # 绘制瀑布图，选择类别1
         shap_value_instance = shap_values[1][0]  # 选择第一条样本的 SHAP 值
-        shap.initjs()
         fig, ax = plt.subplots()
         shap.plots.waterfall(shap_value_instance)
         st.pyplot(fig)
