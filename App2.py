@@ -23,11 +23,12 @@ def preprocess_input(csv_file, scaler):
     scaled_data = scaler.transform(input_data)
     return scaled_data
 
-# 生成SHAP force plot
-def plot_shap_force(model, data):
+# 生成单个样本的 SHAP force plot
+def plot_shap_force(model, data, index=0):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(data)
-    shap.force_plot(explainer.expected_value[1], shap_values[1], data, matplotlib=True)
+    st.write(f"样本 {index+1} 的 SHAP Force Plot")
+    shap.force_plot(explainer.expected_value[1], shap_values[1][index], data[index], matplotlib=True)
     plt.tight_layout()
     st.pyplot()
 
@@ -46,6 +47,6 @@ if uploaded_file is not None:
         prediction_proba = model.predict_proba(input_data)
         st.write(f"预测的母乳转移概率为：{prediction_proba[:, 1]}")
 
-        # 生成SHAP force plot
-        st.write("生成SHAP Force Plot")
-        plot_shap_force(model, input_data)
+        # 生成每个样本的 SHAP force plot
+        for i in range(min(len(input_data), 5)):  # 只显示前5个样本的force plot
+            plot_shap_force(model, input_data, index=i)
