@@ -2,41 +2,41 @@ import streamlit as st
 import pandas as pd
 import joblib
 import shap
-import matplotlib.pyplot as plt
 
-# Load the saved model and scaler
+# 加载模型和标准化工具
 model = joblib.load('best_estimator_GA.pkl')
 scaler = joblib.load('scaler.pkl')
 
-# Set up the app title
-st.title("BRF Prediction and SHAP Visualization")
+# 设置应用标题
+st.title("BRF预测和SHAP可视化")
 
-# Upload CSV file
-uploaded_file = st.file_uploader("Upload a CSV file with 84 features", type="csv")
+# 上传CSV文件
+uploaded_file = st.file_uploader("上传一个包含84个特征的CSV文件", type="csv")
 
 if uploaded_file:
-    # Read the CSV file
+    # 读取CSV文件
     input_data = pd.read_csv(uploaded_file)
 
-    # Check if the CSV has 84 features
+    # 检查CSV是否包含84个特征
     if input_data.shape[1] == 84:
-        # Standardize the input features
+        # 标准化输入特征
         scaled_data = scaler.transform(input_data)
 
-        # Generate predictions
+        # 生成预测
         prediction_probs = model.predict_proba(scaled_data)
 
-        # Display prediction probabilities
-        st.write("Prediction Probabilities:", prediction_probs)
+        # 显示预测概率
+        st.write("预测概率：", prediction_probs)
 
-        # Explain model predictions using SHAP
+        # 使用SHAP解释模型预测
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(scaled_data)
 
-        # SHAP force plot for class 1
-        st.write("SHAP Force Plot for the first instance (Class 1):")
-        shap.force_plot(explainer.expected_value[1], shap_values[1][0,:], scaled_data[0, :], matplotlib=True)
-        plt.tight_layout()
-        st.pyplot(plt)
+        # SHAP力图展示第一个实例（类别1）
+        st.write("第一个实例的SHAP力图（类别1）：")
+        force_plot = shap.force_plot(explainer.expected_value[1], shap_values[1][0,:], scaled_data[0, :])
+
+        # 显示SHAP力图
+        st_shap(force_plot)
     else:
-        st.error("The uploaded CSV must contain exactly 84 features.")
+        st.error("上传的CSV必须包含恰好84个特征。")
