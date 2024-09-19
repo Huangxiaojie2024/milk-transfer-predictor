@@ -1,7 +1,7 @@
 streamlit
 pandas
+numpy
 scikit-learn
 shap
 matplotlib
-pickle-mixin
-imbalanced-learn
+ipython
