@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 import shap
 
@@ -35,7 +34,10 @@ def main():
 
             # 显示SHAP force plot
             st.subheader('SHAP Force Plot for the first sample')
-            shap.force_plot(explainer.expected_value[1], shap_values[1][0,:], scaled_data[0,:], feature_names=data.columns)
+            if len(shap_values) > 1:
+                shap.force_plot(explainer.expected_value[1], shap_values[1][0,:], scaled_data[0,:], feature_names=data.columns)
+            else:
+                shap.force_plot(explainer.expected_value, shap_values[0][0,:], scaled_data[0,:], feature_names=data.columns)
 
         else:
             st.error('The CSV file must contain exactly 84 features.')
