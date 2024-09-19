@@ -7,7 +7,6 @@ import numpy as np
 # 设置页面标题和布局
 st.set_page_config(page_title="化合物母乳转移预测", layout="wide")
 
-
 st.title("化合物母乳转移预测应用")
 
 # 加载模型和标准化器
@@ -76,10 +75,10 @@ if uploaded_file is not None:
                 # 提取指定类别和样本的 SHAP 值
                 if isinstance(shap_values, list):
                     shap_value = shap_values[class_index][0]  # shape 应为 (84,)
-                    base_value = explainer.expected_value[class_index]
+                    base_value = float(explainer.expected_value[class_index])
                 else:
                     shap_value = shap_values[0]
-                    base_value = explainer.expected_value
+                    base_value = float(explainer.expected_value)
 
                 # 检查 shap_value 的形状
                 if shap_value.ndim > 1:
@@ -96,9 +95,10 @@ if uploaded_file is not None:
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
-                # 使用 `st.pyplot` 显示图像
+                
+                # 使用 `shap.plots.waterfall` 并显示为 Plotly 图
                 fig = shap.plots.waterfall(shap_expl, show=False)
-                st.pyplot(fig)
+                st.plotly_chart(fig)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
