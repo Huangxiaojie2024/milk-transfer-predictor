@@ -75,20 +75,13 @@ if uploaded_file is not None:
                 
                 # 对于二分类模型，shap_values 通常是一个列表，包含两个数组，分别对应每个类别
                 if isinstance(shap_values, list):
-                    shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
+                    # 获取对应类别的 SHAP 值
+                    shap_value = shap_values[class_index][0]
                     base_value = explainer.expected_value[class_index]
                 else:
                     shap_value = shap_values[0]
                     base_value = explainer.expected_value
 
-                # 创建 shap.Explanation 对象
-                shap_expl = shap.Explanation(
-                    values=shap_value,
-                    base_values=base_value,
-                    data=single_sample[0],
-                    feature_names=data.columns
-                )
-                
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
@@ -96,12 +89,15 @@ if uploaded_file is not None:
                 # 创建 Matplotlib 图形
                 fig, ax = plt.subplots(figsize=(10, 5))
                 
-                # 绘制 waterfall 力图
-                shap.plots.waterfall(shap_expl, max_display=10, show=False)
+                # 使用 SHAP 的 waterfall plot
+                shap.waterfall_plot = shap.plots._waterfall.waterfall_legacy(
+                    shap.Explanation(values=shap_value, base_values=base_value, data=single_sample[0], feature_names=data.columns),
+                    max_display=10
+                )
                 
                 # 显示图形
                 st.pyplot(fig)
-    
+
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
 else:
