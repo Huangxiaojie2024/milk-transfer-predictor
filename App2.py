@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from sklearn.preprocessing import StandardScaler
 import shap
 import matplotlib.pyplot as plt
 
@@ -43,11 +42,12 @@ if uploaded_file is not None:
         shap.initjs()
 
         # 使用新的force_plot方法
-        fig, ax = plt.subplots()
-        shap.plots.force(explainer.expected_value, shap_values, show=False)
-        plt.savefig('shap_force_plot.png')  # 保存SHAP force plot
-        plt.clf()  # 清理当前图像
-        st.image('shap_force_plot.png')  # 显示SHAP force plot
+        for i in range(len(data)):
+            fig = plt.figure()
+            shap.plots.force(explainer.expected_value, shap_values[i], matplotlib=True)
+            plt.savefig(f'shap_force_plot_{i}.png')  # 保存每个实例的SHAP force plot
+            st.image(f'shap_force_plot_{i}.png')  # 显示SHAP force plot
+            plt.clf()  # 清理当前图像
 
     else:
         st.error("上传的CSV文件特征数应为84个！")
