@@ -92,7 +92,7 @@ if uploaded_file is not None:
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
-                shap.plots.waterfall(shap_expl, max_display=10)
+                shap.plots.waterfall(shap_expl)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
