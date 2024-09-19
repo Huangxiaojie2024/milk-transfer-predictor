@@ -41,7 +41,10 @@ if uploaded_file is not None:
         # 绘制SHAP force plot
         st.write("SHAP值可视化：")
         shap.initjs()
-        force_plot = shap.force_plot(explainer.expected_value, shap_values, data, matplotlib=True)
+
+        # 使用新的force_plot方法
+        fig, ax = plt.subplots()
+        shap.plots.force(explainer.expected_value, shap_values, show=False)
         plt.savefig('shap_force_plot.png')  # 保存SHAP force plot
         plt.clf()  # 清理当前图像
         st.image('shap_force_plot.png')  # 显示SHAP force plot
