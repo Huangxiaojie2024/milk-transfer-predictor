@@ -23,15 +23,15 @@ def preprocess_input(csv_file, scaler):
     scaled_data = scaler.transform(input_data)
     return scaled_data
 
+# 生成单个样本的 SHAP force plot
 def plot_shap_force(model, data, index=0):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(data)
     st.write(f"样本 {index+1} 的 SHAP Force Plot")
     
-    # 修改为直接使用 shap_values，而不是 shap_values[1]
-    shap.force_plot(explainer.expected_value, shap_values[index], data[index], matplotlib=True)
-    plt.tight_layout()
-    st.pyplot()
+    # 使用 shap.plots.force 替换
+    fig = shap.plots.force(explainer.expected_value, shap_values[index], data[index])
+    st.pyplot(fig)
 
 # Streamlit 应用程序的布局
 st.title('化合物母乳转移预测')
