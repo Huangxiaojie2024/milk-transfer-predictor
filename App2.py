@@ -60,6 +60,11 @@ if uploaded_file is not None:
             # Check if the columns match the expected descriptors
             if not (list(data.columns) == expected_descriptors):
                 st.error("The uploaded file does not contain the correct descriptors. Please ensure the columns match the expected list.")
+                
+                # Display expected descriptors as a DataFrame
+                expected_df = pd.DataFrame(expected_descriptors, columns=["Expected Descriptors"])
+                st.subheader("Expected Molecular Descriptors")
+                st.dataframe(expected_df)
             else:
                 st.subheader("Uploaded Data Preview")
                 st.dataframe(data.head())
