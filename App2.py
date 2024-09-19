@@ -79,7 +79,7 @@ if uploaded_file is not None:
 
                 # 创建 SHAP force plot
                 st.subheader(f"SHAP Force Plot - 样本索引 {sample_index}（类别 {class_index}）")
-                shap.initjs()
+                shap.initjs()  # 初始化 JavaScript 库
 
                 # 生成 force plot 并保存为 HTML
                 force_plot = shap.force_plot(
