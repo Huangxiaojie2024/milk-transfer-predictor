@@ -90,8 +90,13 @@ if uploaded_file is not None:
                     matplotlib=False
                 )
 
-                # 将 force plot 渲染为 HTML 并在 Streamlit 中显示
-                components.html(force_plot.html(), height=500, scrolling=True)
+                # 保存为 HTML 文件
+                html_file = f"force_plot_{sample_index}.html"
+                shap.save_html(html_file, force_plot)
+
+                # 在 Streamlit 中显示 HTML
+                with open(html_file) as f:
+                    components.html(f.read(), height=500, scrolling=True)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
