@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # 定义一个函数来加载模型和标准化器，并使用缓存以提高性能
-@st.cache(allow_output_mutation=True)
+@st.cache_resource
 def load_model_and_scaler():
     # 加载预训练的平衡随机森林模型
     with open('best_estimator_GA.pkl', 'rb') as model_file:
