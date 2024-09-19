@@ -1,58 +1,50 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
-import shap
 from sklearn.preprocessing import StandardScaler
+import shap
 import matplotlib.pyplot as plt
 
-# Load your trained Balanced Random Forest model and the scaler
+# 加载模型和标准化器
 model = joblib.load('best_estimator_GA.pkl')
 scaler = joblib.load('scaler.pkl')
 
-def load_data(file):
-    data = pd.read_csv(file)
-    return data
+st.title('化合物母乳转移预测')
 
-def predict_and_explain(data):
-    # Standardize the features
-    data_scaled = scaler.transform(data)
-    
-    # Make prediction
-    prediction_proba = model.predict_proba(data_scaled)[:, 1]
-    
-    # SHAP values
-    explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(data_scaled)
-    
-    return prediction_proba, shap_values, data_scaled, explainer
+# 上传CSV文件
+uploaded_file = st.file_uploader("选择一个包含84个特征的CSV文件", type="csv")
 
-def plot_shap_force(explainer, shap_values, data_scaled, feature_names):
-    # Initialize JavaScript visualization library
-    shap.initjs()
-    # Create the SHAP force plot for the positive class
-    force_plot = shap.force_plot(explainer.expected_value, shap_values, feature_names)
-    return force_plot
-
-
-def main():
-    st.title('Chemical Compound Breast Milk Transfer Prediction')
+if uploaded_file is not None:
+    # 读取CSV文件
+    data = pd.read_csv(uploaded_file)
     
-    # File uploader
-    file = st.file_uploader("Upload your CSV file", type=['csv'])
-    
-    if file:
-        data = load_data(file)
-        prediction_proba, shap_values, data_scaled, explainer = predict_and_explain(data)
-        
-        # Display prediction
-        st.subheader('Prediction Probability')
-        st.write(prediction_proba)
-        
-        # Generate and display SHAP force plot
-        st.subheader('SHAP Force Plot')
-        force_plot = plot_shap_force(explainer, shap_values, data_scaled, data.columns)
-        st.pyplot(force_plot)
+    # 显示上传的数据
+    st.write("上传的数据：")
+    st.write(data)
 
-if __name__ == '__main__':
-    main()
+    # 检查数据的维度
+    if data.shape[1] == 84:
+        # 特征标准化
+        scaled_data = scaler.transform(data)
+
+        # 进行预测
+        predictions = model.predict_proba(scaled_data)[:, 1]  # 获取阳性类别的概率
+
+        # 显示预测结果
+        st.write("预测的阳性转移概率：")
+        st.write(predictions)
+
+        # 生成SHAP值
+        explainer = shap.Explainer(model)
+        shap_values = explainer(scaled_data)
+
+        # 绘制SHAP force plot
+        st.write("SHAP值可视化：")
+        shap.initjs()
+        force_plot = shap.force_plot(explainer.expected_value, shap_values, data, matplotlib=True)
+        plt.savefig('shap_force_plot.png')  # 保存SHAP force plot
+        plt.clf()  # 清理当前图像
+        st.image('shap_force_plot.png')  # 显示SHAP force plot
+
+    else:
+        st.error("上传的CSV文件特征数应为84个！")
