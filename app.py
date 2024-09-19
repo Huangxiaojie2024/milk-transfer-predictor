@@ -77,7 +77,7 @@ if uploaded_file is not None:
 
                 # Ensure the sample index is within bounds for SHAP values
                 if adjusted_index < len(shap_values[class_index]):
-                    shap_value = shap_values[sample_index,:,class_index]  # 提取类别对应的 SHAP 值  # Correctly extract the SHAP values for the selected class
+                    shap_value = shap_values[adjusted_index-1,:,class_index]  # 提取类别对应的 SHAP 值  # Correctly extract the SHAP values for the selected class
                     base_value = float(explainer.expected_value[class_index])
 
                     # Create SHAP force plot
