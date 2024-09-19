@@ -9,7 +9,7 @@ model = joblib.load('best_estimator_GA.pkl')
 scaler = joblib.load('scaler.pkl')
 
 # 设置应用程序标题
-st.title("BRF 预测与 SHAP 瀑布图可视化")
+st.title("BRF 预测与 SHAP 力图可视化")
 
 # 上传 CSV 文件
 uploaded_file = st.file_uploader("上传一个包含 84 个特征的 CSV 文件", type="csv")
@@ -37,17 +37,11 @@ if uploaded_file:
         st.write("SHAP Values Shape:", [sv.shape for sv in shap_values])
 
         # 选择类别1的 SHAP 值
-        st.write("类别 1 的 SHAP 瀑布图（第一条样本）:")
+        st.write("类别 1 的 SHAP 力图（第一条样本）:")
 
-        # 创建 Explanation 对象
-        shap_value_instance = shap.Explanation(values=shap_values[1][0], 
-                                               base_values=explainer.expected_value[1], 
-                                               data=scaled_data[0, :], 
-                                               feature_names=input_data.columns)
-
-        # 绘制瀑布图，选择类别1
+        # 绘制力图，选择类别1
         fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_value_instance)
+        shap.force_plot(explainer.expected_value[1], shap_values[1][0], scaled_data[0, :], matplotlib=True)
         st.pyplot(fig)
 
     else:
