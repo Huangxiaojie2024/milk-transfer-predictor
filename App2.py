@@ -25,14 +25,16 @@ if uploaded_file is not None:
     # 进行预测
     probabilities = model.predict_proba(scaled_data)
     
+    # 显示预测概率
+    st.write(f'Probabilities: {probabilities}')
+    
     # 创建SHAP解释器
     explainer = shap.Explainer(model.predict_proba, scaled_data)
-    shap_values = explainer.shap_values(scaled_data)
+    shap_values = explainer(scaled_data)
     
     # 选择类别1的SHAP值
     shap_values_class_1 = shap_values[:, 1]  # 假设类别1的概率是第二列
     
     # 显示SHAP force plot
-    for i in range(len(shap_values_class_1)):
-        st.write(shap.plots.force(shap_values_class_1[i], scaled_data[i], feature_names=data.columns, show=False))
-        st.pyplot()
+    st.write(shap.plots.force(shap_values_class_1, scaled_data, feature_names=data.columns, show=False))
+    st.pyplot()
