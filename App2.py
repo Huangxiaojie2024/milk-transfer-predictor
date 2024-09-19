@@ -4,6 +4,7 @@ import joblib
 import shap
 import matplotlib.pyplot as plt
 import numpy as np
+import plotly.io as pio
 
 # 设置页面标题和布局
 st.set_page_config(page_title="化合物母乳转移预测", layout="wide")
@@ -75,28 +76,29 @@ if uploaded_file is not None:
                 
                 # 对于二分类模型，shap_values 通常是一个列表，包含两个数组，分别对应每个类别
                 if isinstance(shap_values, list):
-                    # 获取对应类别的 SHAP 值
-                    shap_value = shap_values[class_index][0]
-                    base_value = explainer.expected_value[class_index]
+                    shap_value = shap_values[class_index][0]  # 选择对应类别的 SHAP 值
+                    expected_value = explainer.expected_value[class_index]
                 else:
                     shap_value = shap_values[0]
-                    base_value = explainer.expected_value
+                    expected_value = explainer.expected_value
 
+                # 创建 shap.Explanation 对象
+                shap_expl = shap.Explanation(
+                    values=shap_value,
+                    expected_value=expected_value,  # 修正属性名称
+                    data=single_sample[0],
+                    feature_names=data.columns
+                )
+                
                 # 绘制 SHAP 力图
                 st.subheader(f"SHAP 力图 - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()
-                
-                # 创建 Matplotlib 图形
-                fig, ax = plt.subplots(figsize=(10, 5))
-                
-                # 使用 SHAP 的 waterfall plot
-                shap.waterfall_plot = shap.plots._waterfall.waterfall_legacy(
-                    shap.Explanation(values=shap_value, base_values=base_value, data=single_sample[0], feature_names=data.columns),
-                    max_display=10
-                )
-                
-                # 显示图形
-                st.pyplot(fig)
+
+                # 生成 waterfall 图并获取 Plotly 图表对象
+                fig = shap.plots.waterfall(shap_expl, show=False)
+
+                # 使用 Plotly 的图表对象在 Streamlit 中显示
+                st.plotly_chart(fig, use_container_width=True)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
