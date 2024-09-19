@@ -74,14 +74,14 @@ if uploaded_file is not None:
                 shap_values = explainer.shap_values(single_sample)
 
                 # 提取指定类别和样本的 SHAP 值
-                shap_value = shap_values[0][:,class_index]    # 提取类别对应的 SHAP 值
+                shap_value = shap_values[sample_index-1,:,class_index]  # 提取类别对应的 SHAP 值
                 base_value = float(explainer.expected_value[class_index])
 
                 # 创建 SHAP force plot
                 st.subheader(f"SHAP Force Plot - 样本索引 {sample_index}（类别 {class_index}）")
                 shap.initjs()  # 初始化 JavaScript 库
 
-                # 生成 force plot
+                # 生成 force plot 并保存为 HTML
                 force_plot = shap.force_plot(
                     base_value,
                     shap_value,
@@ -90,8 +90,13 @@ if uploaded_file is not None:
                     matplotlib=False
                 )
 
+                # 保存为 HTML 文件
+                html_file = f"force_plot_{sample_index}.html"
+                shap.save_html(html_file, force_plot)
+
                 # 在 Streamlit 中显示 HTML
-                components.html(force_plot.html(), height=500, scrolling=True)
+                with open(html_file) as f:
+                    components.html(f.read(), height=500, scrolling=True)
 
     except Exception as e:
         st.error(f"文件处理出现错误: {e}")
