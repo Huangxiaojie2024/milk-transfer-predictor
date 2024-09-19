@@ -33,9 +33,9 @@ if uploaded_file:
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(scaled_data)
 
-        # SHAP force plot
-        st.write("SHAP Force Plot for the first instance:")
-        shap.force_plot(explainer.expected_value[1], shap_values[1][0, :], scaled_data[0, :], matplotlib=True)
+        # SHAP force plot for class 1
+        st.write("SHAP Force Plot for the first instance (Class 1):")
+        shap.force_plot(explainer.expected_value[1], shap_values[1][0], scaled_data[0, :], matplotlib=True)
         plt.tight_layout()
         st.pyplot(plt)
     else:
