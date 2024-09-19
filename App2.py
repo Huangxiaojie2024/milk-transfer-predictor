@@ -25,11 +25,13 @@ def predict_and_explain(data):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(data_scaled)
     
-    return prediction_proba, shap_values
+    return prediction_proba, shap_values, data_scaled
 
-def plot_shap(shap_values, feature_names):
-    shap.summary_plot(shap_values, feature_names=feature_names, plot_type="bar")
-    
+def plot_shap_force(shap_values, data_scaled, feature_names):
+    # Take the SHAP values for the positive class (index 1)
+    shap.initjs()  # Initialize JavaScript visualization library
+    return shap.force_plot(explainer.expected_value[1], shap_values[1], feature_names)
+
 def main():
     st.title('Chemical Compound Breast Milk Transfer Prediction')
     
@@ -38,17 +40,16 @@ def main():
     
     if file:
         data = load_data(file)
-        prediction_proba, shap_values = predict_and_explain(data)
+        prediction_proba, shap_values, data_scaled = predict_and_explain(data)
         
         # Display prediction
         st.subheader('Prediction Probability')
         st.write(prediction_proba)
         
-        # Plot SHAP values
+        # Plot SHAP force plot
         st.subheader('SHAP Force Plot')
-        plt.figure(figsize=(10, 5))
-        plot_shap(shap_values, data.columns)
-        st.pyplot(plt)
-        
+        force_plot_html = plot_shap_force(shap_values, data_scaled, data.columns)
+        st.components.v1.html(force_plot_html.html(), height=300)  # Render the force plot as HTML
+
 if __name__ == '__main__':
     main()
