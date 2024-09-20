@@ -46,7 +46,7 @@ model = load_model("best_estimator_GA.pkl")
 scaler = load_scaler("scaler.pkl")
 
 # File upload
-st.sidebar.header("Upload New Drug Compound Data")
+st.sidebar.header("Upload New Chemical Data")
 uploaded_file = st.sidebar.file_uploader("Upload a CSV file with 84 features", type=["csv"])
 
 if uploaded_file is not None:
