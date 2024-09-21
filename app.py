@@ -105,8 +105,9 @@ if uploaded_file is not None:
                 # Display the formatted message
                 message = f"""
                 <h3><b><i>The probability of your predicted compound transferring through breast milk is 
-                <span style='color:red'>{prob_high_risk:.2%}</span> ({risk_class}).</i></b></h3>
+                <span style='color:red'>{prob_high_risk:.2%}</span> (<span style='color:red'>{risk_class}</span>).</i></b></h3>
                 """
+
                 st.markdown(message, unsafe_allow_html=True)
 
                 if st.sidebar.button("Show SHAP Force Plot"):
