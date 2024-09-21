@@ -81,7 +81,7 @@ if uploaded_file is not None:
                 st.subheader("Prediction Probabilities")
                 st.dataframe(prob_df.head())
 
-                # Select sample for SHAP force plot
+                # Sidebar options for SHAP and Sample Selection
                 st.sidebar.header("SHAP Force Plot Options")
                 sample_index = st.sidebar.number_input(
                     "Select Sample Index (starting from 0)",
@@ -97,6 +97,18 @@ if uploaded_file is not None:
                     format_func=lambda x: f"Class {x}"
                 )
 
+                # Determine risk class based on probability
+                prob_high_risk = probabilities[sample_index][1]
+                prob_low_risk = probabilities[sample_index][0]
+                risk_class = "high-risk" if prob_high_risk >= prob_low_risk else "low-risk"
+
+                # Display the formatted message
+                message = f"""
+                <h3><b><i>The probability of your predicted compound transferring through breast milk is 
+                <span style='color:red'>{prob_high_risk:.2%}</span> ({risk_class}).</i></b></h3>
+                """
+                st.markdown(message, unsafe_allow_html=True)
+
                 if st.sidebar.button("Show SHAP Force Plot"):
                     # Select a single sample
                     single_sample = scaled_data[sample_index].reshape(1, -1)
@@ -106,7 +118,7 @@ if uploaded_file is not None:
                     shap_values = explainer.shap_values(single_sample)
 
                     # Extract SHAP values for the specified class and sample
-                    shap_value = shap_values[0][:, class_index]  # Extract SHAP values corresponding to the class
+                    shap_value = shap_values[class_index][0]  # Extract SHAP values corresponding to the class
                     base_value = float(explainer.expected_value[class_index])
 
                     # Create SHAP force plot
@@ -127,7 +139,7 @@ if uploaded_file is not None:
                     shap.save_html(html_file, force_plot)
 
                     # Display HTML in Streamlit
-                    with open(html_file) as f:
+                    with open(html_file, "r", encoding="utf-8") as f:
                         components.html(f.read(), height=500, scrolling=True)
 
     except Exception as e:
