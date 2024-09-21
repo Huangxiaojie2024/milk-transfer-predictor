@@ -118,7 +118,7 @@ if uploaded_file is not None:
                     shap_values = explainer.shap_values(single_sample)
 
                     # Extract SHAP values for the specified class and sample
-                    shap_value = shap_valuesshap_values[0][:, class_index]   # Extract SHAP values corresponding to the class
+                    shap_value = shap_values[0][:, class_index]   # Extract SHAP values corresponding to the class
                     base_value = float(explainer.expected_value[class_index])
 
                     # Create SHAP force plot
