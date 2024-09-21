@@ -8,7 +8,21 @@ import streamlit.components.v1 as components
 # Set page title and layout
 st.set_page_config(page_title="Prediction of Chemical Transfer to Breast Milk", layout="wide")
 
+# 主界面标题
 st.title("Chemical Transfer Predictor for Breast Milk")
+
+# 添加母乳喂养的图片
+# 请确保 'breastfeeding.jpg' 文件存在于与此脚本相同的目录中
+# 或者提供图片的完整路径
+try:
+    st.image("breastfeeding.jpg", caption="Breastfeeding Image", use_column_width=True)
+except FileNotFoundError:
+    st.warning("母乳喂养的图片未找到。请确保 'breastfeeding.jpg' 文件存在于脚本目录中。")
+
+# 显示预期的84个分子描述符作为表格
+st.subheader("Expected Molecular Descriptors")
+expected_df = pd.DataFrame(expected_descriptors, columns=["Descriptor"])
+st.dataframe(expected_df)
 
 # Expected molecular descriptors
 expected_descriptors = [
