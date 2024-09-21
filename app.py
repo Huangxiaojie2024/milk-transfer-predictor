@@ -33,11 +33,6 @@ expected_descriptors = [
     "Num_TrueAtropisomerCenters", "Molecular_FractionalPolarSASA", "IC"
 ]
 
-# Display expected molecular descriptors as a DataFrame
-st.subheader("Expected Molecular Descriptors")
-expected_df = pd.DataFrame(expected_descriptors, columns=["Expected Descriptors"])
-st.dataframe(expected_df)
-
 # Load model and scaler
 @st.cache_resource
 def load_model(model_path):
@@ -65,6 +60,11 @@ if uploaded_file is not None:
             # Check if the columns match the expected descriptors
             if not (list(data.columns) == expected_descriptors):
                 st.error("The uploaded file does not contain the correct descriptors. Please ensure the columns match the expected list.")
+                
+                # Display expected descriptors as a DataFrame
+                expected_df = pd.DataFrame(expected_descriptors, columns=["Expected Descriptors"])
+                st.subheader("Expected Molecular Descriptors")
+                st.dataframe(expected_df)
             else:
                 st.subheader("Uploaded Data Preview")
                 st.dataframe(data.head())
@@ -106,14 +106,14 @@ if uploaded_file is not None:
                     shap_values = explainer.shap_values(single_sample)
 
                     # Extract SHAP values for the specified class and sample
-                    shap_value = shap_values[class_index]  # Extract SHAP values corresponding to the class
+                    shap_value = shap_values[0][:, class_index]  # Extract SHAP values corresponding to the class
                     base_value = float(explainer.expected_value[class_index])
 
                     # Create SHAP force plot
                     st.subheader(f"SHAP Force Plot - Sample Index {sample_index} (Class {class_index})")
                     shap.initjs()  # Initialize JavaScript library
 
-                    # Generate force plot
+                    # Generate force plot and save as HTML
                     force_plot = shap.force_plot(
                         base_value,
                         shap_value,
@@ -122,8 +122,13 @@ if uploaded_file is not None:
                         matplotlib=False
                     )
 
-                    # Display the force plot in Streamlit
-                    components.html(force_plot, height=500)
+                    # Save as HTML file
+                    html_file = f"force_plot_{sample_index}.html"
+                    shap.save_html(html_file, force_plot)
+
+                    # Display HTML in Streamlit
+                    with open(html_file) as f:
+                        components.html(f.read(), height=500, scrolling=True)
 
     except Exception as e:
         st.error(f"Error processing the file: {e}")
