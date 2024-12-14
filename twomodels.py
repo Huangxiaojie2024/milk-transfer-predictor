@@ -13,22 +13,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
-st.markdown("""
-    <style>
-    .main {
-        padding: 2rem;
-    }
-    .stButton>button {
-        width: 100%;
-    }
-    .pred-text {
-        font-size: 1.2rem;
-        font-weight: bold;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 @st.cache_resource
 def load_resources():
     """Load all models and scalers"""
@@ -39,10 +23,32 @@ def load_resources():
     # Load Model 2 (Chemopy)
     model2 = joblib.load("GA_chemopy_model.pkl")
     scaler2 = joblib.load("GA_chemopy_scaler.pkl")
+    
+    # Load features lists
     with open("GA_chemopy_features.pkl", 'rb') as f:
         features2 = joblib.load(f)
-        
+    
     return model1, scaler1, model2, scaler2, features2
+
+def process_features(data, model_choice, features_list):
+    """Extract and validate required features"""
+    try:
+        # Check which features are available in the input data
+        available_features = list(set(features_list) & set(data.columns))
+        missing_features = list(set(features_list) - set(data.columns))
+        
+        if missing_features:
+            st.warning(f"Missing {len(missing_features)} required features. Please ensure all required features are present.")
+            with st.expander("View missing features"):
+                st.write(missing_features)
+            return None
+            
+        # Extract only the required features in the correct order
+        return data[features_list]
+    
+    except Exception as e:
+        st.error(f"Error processing features: {str(e)}")
+        return None
 
 def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
     """Create SHAP force plot using original feature values"""
@@ -57,7 +63,6 @@ def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
     )
     
     shap.save_html(f"force_plot_{sample_idx}.html", force_plot)
-    
     with open(f"force_plot_{sample_idx}.html", 'r', encoding='utf-8') as f:
         components.html(f.read(), height=500, scrolling=True)
 
@@ -65,7 +70,7 @@ def main():
     # Load resources
     model1, scaler1, model2, scaler2, features2 = load_resources()
     
-    # Page title and introduction
+    # Page title
     st.title("🧬 Chemical Transfer Predictor for Breast Milk")
     
     # Introduction
@@ -104,25 +109,6 @@ def main():
         help="Select which model to use for prediction"
     )
     
-    # Model-specific instructions
-    if model_choice == "BRF_MOE+DS_GA_84":
-        st.info("""
-        **Using BRF_MOE+DS_GA_84 Model**
-        - Upload your MOE/DS descriptor file
-        - The model will automatically extract the required 84 features
-        - Optimized for accurate prediction of breast milk transfer
-        """)
-    else:
-        st.info("""
-        **Using BRF_Chemopy_GA_101 Model**
-        1. First obtain Chemopy descriptors:
-           - Visit [ChemDes](http://www.scbdd.com/chemdes/)
-           - Enter your SMILES structure
-           - Select Chemopy descriptors
-           - Calculate and download
-        2. Upload the Chemopy descriptor file here
-        """)
-    
     # File upload
     uploaded_file = st.file_uploader(
         "Upload descriptor file (CSV format)",
@@ -131,15 +117,31 @@ def main():
     
     if uploaded_file is not None:
         try:
-            # Load and process data
+            # Load data
             data = pd.read_csv(uploaded_file)
             
-            # Select model and process based on choice
-            current_model = model1 if model_choice == "BRF_MOE+DS_GA_84" else model2
-            current_scaler = scaler1 if model_choice == "BRF_MOE+DS_GA_84" else scaler2
+            # Select model and features based on choice
+            if model_choice == "BRF_MOE+DS_GA_84":
+                current_model = model1
+                current_scaler = scaler1
+                features_list = features1  # You'll need to define this list
+            else:
+                current_model = model2
+                current_scaler = scaler2
+                features_list = features2
+            
+            # Process and validate features
+            processed_data = process_features(data, model_choice, features_list)
+            
+            if processed_data is None:
+                return
+            
+            # Display processed data preview
+            st.subheader("Selected Features Preview")
+            st.dataframe(processed_data.head())
             
             # Scale features
-            scaled_data = current_scaler.transform(data)
+            scaled_data = current_scaler.transform(processed_data)
             
             # Make predictions
             probabilities = current_model.predict_proba(scaled_data)
@@ -147,7 +149,7 @@ def main():
             # Display results
             st.header("🎯 Prediction Results")
             results_df = pd.DataFrame({
-                'Sample': range(1, len(data) + 1),
+                'Sample': range(1, len(processed_data) + 1),
                 'Risk Class': ['High Risk' if p >= 0.5 else 'Low Risk' for p in probabilities[:, 1]],
                 'Transfer Probability': [f"{p:.3f}" for p in probabilities[:, 1]]
             })
@@ -158,7 +160,7 @@ def main():
             sample_idx = st.number_input(
                 "Select sample to analyze:",
                 min_value=0,
-                max_value=len(data)-1,
+                max_value=len(processed_data)-1,
                 value=0
             )
             
@@ -173,7 +175,7 @@ def main():
             
             # SHAP visualization
             st.subheader("Feature Impact Analysis")
-            create_shap_force_plot(current_model, scaled_data, data, sample_idx)
+            create_shap_force_plot(current_model, scaled_data, processed_data, sample_idx)
             
             # Download results
             csv = results_df.to_csv(index=False)
@@ -189,7 +191,11 @@ def main():
             st.exception(e)
     
     else:
-        st.info("Please upload your descriptor file to begin analysis.")
+        # Show feature requirements
+        if model_choice == "BRF_MOE+DS_GA_84":
+            st.info("Please upload a file containing MOE and DS descriptors.")
+        else:
+            st.info("Please upload a file containing Chemopy descriptors from ChemDes.")
 
 if __name__ == "__main__":
     main()
