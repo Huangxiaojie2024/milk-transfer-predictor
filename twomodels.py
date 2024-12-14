@@ -38,15 +38,15 @@ DESCRIPTORS_MODEL1 = [
 def load_resources():
     """Load all models and scalers"""
     # Load BRF_MOE+DS_GA_84 model
-    model1 = joblib.load("BRF_MOE+DS_GA_84.pkl")
-    scaler1 = joblib.load("MOE+DS_scaler.pkl")
-    with open("MOE+DS_features.pkl", 'rb') as f:
+    model1 = joblib.load("best_estimator_GA.pkl")
+    scaler1 = joblib.load("scaler.pkl")
+    with open("best_estimator_GA.pkl", 'rb') as f:
         features1 = joblib.load(f)
     
     # Load BRF_Chemopy_GA_101 model
-    model2 = joblib.load("BRF_Chemopy_GA_101.pkl")
-    scaler2 = joblib.load("Chemopy_scaler.pkl")
-    with open("Chemopy_features.pkl", 'rb') as f:
+    model2 = joblib.load("GA_chemopy_model.pkl")
+    scaler2 = joblib.load("GA_chemopy_scaler.pkl")
+    with open("GA_chemopy_features.pkl", 'rb') as f:
         features2 = joblib.load(f)
         
     return model1, scaler1, features1, model2, scaler2, features2
