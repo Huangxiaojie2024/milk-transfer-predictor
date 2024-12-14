@@ -69,7 +69,25 @@ def load_resources():
     model1 = joblib.load("best_estimator_GA.pkl")
     scaler1 = joblib.load("scaler.pkl")
     features1 = [
-        # 您的84个特征列表
+        "apol", "ast_fraglike", "a_acc", "a_nCl", "a_nI", "a_nS",
+        "BCUT_SLOGP_0", "BCUT_SLOGP_2", "b_1rotR", "b_max1len", "chiral_u",
+        "GCUT_PEOE_0", "GCUT_SLOGP_2", "GCUT_SMR_0", "h_logD", "h_log_pbo",
+        "h_pKa", "h_pstates", "h_pstrain", "lip_druglike", "lip_violation",
+        "opr_leadlike", "opr_nring", "opr_violation", "PEOE_RPC-", "PEOE_VSA+1",
+        "PEOE_VSA+2", "PEOE_VSA+4", "PEOE_VSA+5", "PEOE_VSA+6", "PEOE_VSA-0",
+        "PEOE_VSA-4", "PEOE_VSA_FHYD", "Q_VSA_PNEG", "reactive", "rsynth",
+        "SlogP_VSA1", "SlogP_VSA2", "SlogP_VSA3", "SlogP_VSA4", "SlogP_VSA5",
+        "SlogP_VSA7", "SlogP_VSA9", "SMR_VSA1", "SMR_VSA4", "SMR_VSA5",
+        "SMR_VSA6", "vsa_other", "ALogP98_Unknown", "ES_Count_aaaC",
+        "ES_Count_aaCH", "ES_Count_aaO", "ES_Count_dS", "ES_Count_dsCH",
+        "ES_Count_dsN", "ES_Count_sCH3", "ES_Count_sNH2", "ES_Count_sOH",
+        "ES_Count_ssCH2", "ES_Count_sSH", "ES_Count_ssNH", "ES_Count_ssssN",
+        "ES_Count_tN", "ES_Sum_sssCH", "ES_Sum_ssssC", "QED", "QED_HBD",
+        "QED_MW", "QED_PSA", "Num_BridgeBonds", "Num_BridgeHeadAtoms",
+        "Num_MesoStereoAtomsCIP", "Num_NegativeAtoms", "Num_RingFusionBonds",
+        "Num_Rings3", "Num_Rings4", "Num_Rings6", "Num_Rings7",
+        "Num_Rings9Plus", "Num_SpiroAtoms", "Num_TerminalRotomers",
+        "Num_TrueAtropisomerCenters", "Molecular_FractionalPolarSASA", "IC"
     ]
     
     # Model 2 (Chemopy)
