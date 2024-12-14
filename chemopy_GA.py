@@ -19,11 +19,11 @@ st.set_page_config(
 @st.cache_resource
 def load_resources() -> Tuple[Any, Any, list]:
     """Load model, scaler and selected features"""
-    with open('models/GA_chemopy_model.pkl', 'rb') as f:
+    with open('GA_chemopy_model.pkl', 'rb') as f:
         model = pickle.load(f)
-    with open('models/GA_chemopy_scaler.pkl', 'rb') as f:
+    with open('GA_chemopy_scaler.pkl', 'rb') as f:
         scaler = pickle.load(f)
-    with open('models/GA_chemopy_features.pkl', 'rb') as f:
+    with open('GA_chemopy_features.pkl', 'rb') as f:
         selected_features = pickle.load(f)
     return model, scaler, selected_features
 
