@@ -442,10 +442,9 @@ def main():
             <div class='info-box'>
             <h4>Getting Started</h4>
             <p>1. Select your preferred prediction model</p>
-            <p>2. View the required features in the feature subset viewer</p>
-            <p>3. Prepare your CSV file with required molecular descriptors</p>
-            <p>4. Upload your file to begin the analysis</p>
-            <p>5. Explore SHAP visualization to understand prediction results</p>
+            <p>2. Prepare your CSV file with required molecular descriptors</p>
+            <p>3. Upload your file to begin the analysis</p>
+            <p>4. Explore SHAP visualization to understand prediction results</p>
             </div>
             """, unsafe_allow_html=True)
 
