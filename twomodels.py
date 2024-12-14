@@ -232,20 +232,6 @@ def main():
     </div>
     <h1 class='title-text'>Chemical Transfer Risk Predictor for Human Milk</h1>
     """, unsafe_allow_html=True)
-
-# 同时需要更新CSS中的图标样式：
-
-    .baby-icon {
-        text-align: center;
-        font-size: 1.2rem;
-        margin-bottom: 1rem;
-        line-height: 1.2;
-        font-family: monospace;
-        white-space: pre;
-        color: #2b6777;
-    }
-    <h1 class='title-text'>Chemical Transfer Risk Predictor for Human Milk</h1>
-    """, unsafe_allow_html=True)
     st.markdown("<h3 class='subtitle-text'>Advanced Machine Learning Models for Assessing Chemical Exposure Risk in Breastfeeding Infants</h3>", unsafe_allow_html=True)
     
     # Enhanced Introduction with SHAP explanation
