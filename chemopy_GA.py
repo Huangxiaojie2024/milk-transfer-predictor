@@ -95,7 +95,7 @@ def main():
 
         ### Step 2: Prepare Your Data
         - Ensure your CSV file contains all required Chemopy descriptors
-        - The model uses 84 selected descriptors for prediction
+        - The model uses 101 selected descriptors for prediction
         
         ### Step 3: Upload and Predict
         - Upload your prepared CSV file
