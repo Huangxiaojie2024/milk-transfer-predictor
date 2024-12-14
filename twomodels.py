@@ -29,35 +29,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Expected molecular descriptors for Model 1 (MOE+DS)
-DESCRIPTORS_MODEL1 = [
-    # 您的84个MOE+DS特征列表
-]
-
 @st.cache_resource
 def load_resources():
     """Load all models and scalers"""
-    # Load BRF_MOE+DS_GA_84 model
+    # Load Model 1 (MOE+DS)
     model1 = joblib.load("best_estimator_GA.pkl")
     scaler1 = joblib.load("scaler.pkl")
-    with open("best_estimator_GA.pkl", 'rb') as f:
-        features1 = joblib.load(f)
     
-    # Load BRF_Chemopy_GA_101 model
+    # Load Model 2 (Chemopy)
     model2 = joblib.load("GA_chemopy_model.pkl")
     scaler2 = joblib.load("GA_chemopy_scaler.pkl")
     with open("GA_chemopy_features.pkl", 'rb') as f:
         features2 = joblib.load(f)
         
-    return model1, scaler1, features1, model2, scaler2, features2
-
-def extract_features(data, selected_features):
-    """Extract required features from input data"""
-    try:
-        return data[selected_features]
-    except KeyError as e:
-        missing_features = [f for f in selected_features if f not in data.columns]
-        raise KeyError(f"Missing required features: {missing_features}")
+    return model1, scaler1, model2, scaler2, features2
 
 def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
     """Create SHAP force plot using original feature values"""
@@ -78,30 +63,37 @@ def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
 
 def main():
     # Load resources
-    model1, scaler1, features1, model2, scaler2, features2 = load_resources()
+    model1, scaler1, model2, scaler2, features2 = load_resources()
     
-    # Page title
+    # Page title and introduction
     st.title("🧬 Chemical Transfer Predictor for Breast Milk")
     
     # Introduction
     st.markdown("""
-    ## About This Tool
-    This application provides two advanced models for predicting chemical transfer into human breast milk:
-    
+    ## Welcome to the Chemical Transfer Predictor
+    This tool provides two advanced models for predicting chemical transfer into human breast milk:
+
     ### 1. BRF_MOE+DS_GA_84 Model
-    - Uses 84 selected features from MOE and Discovery Studio
-    - Automatically extracts required features from your input data
-    - Upload any MOE/DS descriptor file, and the model will select needed features
+    - Utilizes 84 optimally selected features from MOE and Discovery Studio descriptors
+    - Features selected through genetic algorithm optimization
+    - **Input Requirements**: MOE and Discovery Studio molecular descriptors
     
     ### 2. BRF_Chemopy_GA_101 Model
     - Uses 101 Chemopy molecular descriptors
-    - Requires pre-calculation of Chemopy descriptors from ChemDes
-    - Follow these steps:
-        1. Visit [ChemDes](http://www.scbdd.com/chemdes/)
-        2. Input your molecule's SMILES structure
-        3. Select "Chemopy Descriptors" in the options
-        4. Calculate and download the descriptors
-        5. Upload the downloaded file here
+    - **Important**: Requires pre-calculation of descriptors from ChemDes
+    
+    ### How to Use
+    1. **For BRF_MOE+DS_GA_84**:
+       - Prepare your MOE and DS descriptors
+       - Upload your descriptor file directly
+       - The model will automatically extract required features
+    
+    2. **For BRF_Chemopy_GA_101**:
+       - Visit [ChemDes](http://www.scbdd.com/chemdes/)
+       - Input your molecule's SMILES structure
+       - Select "Chemopy Descriptors"
+       - Calculate and download descriptors
+       - Upload the Chemopy file here
     """)
     
     # Sidebar - Model Selection
@@ -118,55 +110,42 @@ def main():
         **Using BRF_MOE+DS_GA_84 Model**
         - Upload your MOE/DS descriptor file
         - The model will automatically extract the required 84 features
-        - Features are selected using genetic algorithm optimization
+        - Optimized for accurate prediction of breast milk transfer
         """)
     else:
         st.info("""
         **Using BRF_Chemopy_GA_101 Model**
-        1. Calculate Chemopy descriptors:
-           - Go to [ChemDes](http://www.scbdd.com/chemdes/)
+        1. First obtain Chemopy descriptors:
+           - Visit [ChemDes](http://www.scbdd.com/chemdes/)
            - Enter your SMILES structure
            - Select Chemopy descriptors
-           - Download results
+           - Calculate and download
         2. Upload the Chemopy descriptor file here
         """)
     
-    # File upload section
+    # File upload
     uploaded_file = st.file_uploader(
         "Upload descriptor file (CSV format)",
-        type=["csv"],
-        help="Upload your molecular descriptor file"
+        type=["csv"]
     )
     
     if uploaded_file is not None:
         try:
-            # Load data
+            # Load and process data
             data = pd.read_csv(uploaded_file)
             
-            # Select appropriate model and process data
-            if model_choice == "BRF_MOE+DS_GA_84":
-                # Extract required features
-                data_selected = extract_features(data, features1)
-                current_model = model1
-                current_scaler = scaler1
-            else:
-                # Use all features for Chemopy model
-                data_selected = data
-                current_model = model2
-                current_scaler = scaler2
-            
-            # Show data preview
-            with st.expander("View Selected Features", expanded=False):
-                st.dataframe(data_selected)
+            # Select model and process based on choice
+            current_model = model1 if model_choice == "BRF_MOE+DS_GA_84" else model2
+            current_scaler = scaler1 if model_choice == "BRF_MOE+DS_GA_84" else scaler2
             
             # Scale features
-            data_scaled = current_scaler.transform(data_selected)
+            scaled_data = current_scaler.transform(data)
             
             # Make predictions
-            probabilities = current_model.predict_proba(data_scaled)
+            probabilities = current_model.predict_proba(scaled_data)
             
-            # Results section
-            st.header("Prediction Results")
+            # Display results
+            st.header("🎯 Prediction Results")
             results_df = pd.DataFrame({
                 'Sample': range(1, len(data) + 1),
                 'Risk Class': ['High Risk' if p >= 0.5 else 'Low Risk' for p in probabilities[:, 1]],
@@ -175,7 +154,7 @@ def main():
             st.dataframe(results_df)
             
             # SHAP Analysis
-            st.header("SHAP Analysis")
+            st.header("🔍 SHAP Analysis")
             sample_idx = st.number_input(
                 "Select sample to analyze:",
                 min_value=0,
@@ -192,9 +171,9 @@ def main():
                 - **Risk Classification**: <span style='color:{"red" if prob >= 0.5 else "green"}'>{risk_class}</span>
                 """, unsafe_allow_html=True)
             
-            # SHAP force plot
-            st.subheader("Feature Contribution Analysis")
-            create_shap_force_plot(current_model, data_scaled, data_selected, sample_idx)
+            # SHAP visualization
+            st.subheader("Feature Impact Analysis")
+            create_shap_force_plot(current_model, scaled_data, data, sample_idx)
             
             # Download results
             csv = results_df.to_csv(index=False)
@@ -210,12 +189,7 @@ def main():
             st.exception(e)
     
     else:
-        # Show feature templates
-        if model_choice == "BRF_MOE+DS_GA_84":
-            with st.expander("View Required MOE+DS Features"):
-                st.dataframe(pd.DataFrame(features1, columns=["Required Features"]))
-        else:
-            st.write("Please calculate and upload Chemopy descriptors from ChemDes website.")
+        st.info("Please upload your descriptor file to begin analysis.")
 
 if __name__ == "__main__":
     main()
