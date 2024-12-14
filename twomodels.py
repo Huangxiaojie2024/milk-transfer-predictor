@@ -226,15 +226,9 @@ def main():
     model1, scaler1, features1, model2, scaler2, features2 = load_resources()
     
     # Enhanced Header with baby icon
-     # Enhanced Header with breastfeeding mother icon
     st.markdown("""
     <div class='baby-icon'>
-    ╭━━━┳━━━╮<br>
-    ┃&nbsp;&nbsp;&nbsp;&nbsp;┃&nbsp;&nbsp;&nbsp;&nbsp;┃<br>
-    ┃&nbsp;◠&nbsp;┃&nbsp;◠&nbsp;┃<br>
-    ┃&nbsp;&nbsp;&nbsp;&nbsp;┗━━━┛<br>
-    ┃&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;👶&nbsp;&nbsp;┃<br>
-    ╰━━━━━━━╯<br>
+        👶
     </div>
     <h1 class='title-text'>Chemical Transfer Risk Predictor for Human Milk</h1>
     """, unsafe_allow_html=True)
