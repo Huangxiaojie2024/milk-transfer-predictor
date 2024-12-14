@@ -14,7 +14,7 @@ st.set_page_config(
     page_icon="🧬"
 )
 
-# Enhanced CSS for better UI
+# Enhanced CSS with all styles
 st.markdown("""
     <style>
     .main {
@@ -102,6 +102,30 @@ st.markdown("""
     .feature-list li:last-child {
         border-bottom: none;
     }
+    .baby-icon {
+        text-align: center;
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    .feature-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+    .feature-table th, .feature-table td {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    .feature-table th {
+        background-color: #f5f5f5;
+    }
+    .feature-expander {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -132,7 +156,6 @@ def load_resources():
         "Num_Rings3", "Num_Rings4", "Num_Rings6", "Num_Rings7",
         "Num_Rings9Plus", "Num_SpiroAtoms", "Num_TerminalRotomers",
         "Num_TrueAtropisomerCenters", "Molecular_FractionalPolarSASA", "IC"
-
     ]
     
     # Model 2 (Chemopy)
@@ -167,21 +190,59 @@ def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
     with open(f"force_plot_{sample_idx}.html", 'r', encoding='utf-8') as f:
         components.html(f.read(), height=500, scrolling=True)
 
+def display_features_table(features_list, model_name):
+    """Display features in a paginated table format"""
+    features_df = pd.DataFrame(features_list, columns=['Feature Name'])
+    features_df.index = range(1, len(features_df) + 1)
+    
+    st.markdown(f"### 📊 Optimal Feature Subset for {model_name}")
+    st.markdown("""
+    <div class='info-box'>
+    These features were selected using genetic algorithm optimization to provide the best predictive performance.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 添加搜索功能
+    search_term = st.text_input("🔍 Search features", "")
+    
+    if search_term:
+        filtered_df = features_df[features_df['Feature Name'].str.contains(search_term, case=False)]
+    else:
+        filtered_df = features_df
+    
+    # 分页显示
+    page_size = st.selectbox("Features per page", [10, 20, 50, 100])
+    total_pages = len(filtered_df) // page_size + (1 if len(filtered_df) % page_size != 0 else 0)
+    page = st.number_input("Page", 1, total_pages, 1)
+    
+    start_idx = (page - 1) * page_size
+    end_idx = min(start_idx + page_size, len(filtered_df))
+    
+    st.dataframe(filtered_df.iloc[start_idx:end_idx], height=400)
+    st.markdown(f"Showing features {start_idx + 1} to {end_idx} of {len(filtered_df)}")
+
 def main():
     # Load resources
     model1, scaler1, features1, model2, scaler2, features2 = load_resources()
     
-    # Enhanced Header
-    st.markdown("<h1 class='title-text'>🧬 Chemical Transfer Risk Predictor for Human Milk</h1>", unsafe_allow_html=True)
+    # Enhanced Header with baby icon
+    st.markdown("""
+    <div class='baby-icon'>
+        👶
+    </div>
+    <h1 class='title-text'>Chemical Transfer Risk Predictor for Human Milk</h1>
+    """, unsafe_allow_html=True)
     st.markdown("<h3 class='subtitle-text'>Advanced Machine Learning Models for Assessing Chemical Exposure Risk in Breastfeeding Infants</h3>", unsafe_allow_html=True)
     
-    # Enhanced Introduction
+    # Enhanced Introduction with SHAP explanation
     st.markdown("""
     <div class='info-box'>
     <h4>Welcome to the Chemical Transfer Risk Predictor!</h4>
     This advanced tool leverages state-of-the-art Balanced Random Forest (BRF) models to assess the risk 
     of chemical transfer into human breast milk. Choose between two specialized models, each optimized 
-    for different molecular descriptor sets.
+    for different molecular descriptor sets. The tool provides SHAP (SHapley Additive exPlanations) force plots 
+    for interpretable visualization analysis, helping you understand which molecular features contribute most 
+    significantly to the prediction results.
     </div>
     """, unsafe_allow_html=True)
     
@@ -215,12 +276,20 @@ def main():
             <h4 class='model-header'>BRF_Chemopy_GA_101 Model</h4>
             <ul class='feature-list'>
             <li>🔬 Based on Balanced Random Forest algorithm</li>
-            <li>🔗 Calculate descriptors at <a href='http://www.scbdd.com/chemdes/'>ChemDes</a></li>
+            <li>🧪 Uses comprehensive Chemopy molecular descriptors</li>
             <li>🎯 Automatically selects best 101 descriptors via genetic algorithm</li>
+            <li>🔗 Calculate descriptors at <a href='http://www.scbdd.com/chemdes/'>ChemDes</a></li>
             <li>⚖️ Balanced approach for reliable predictions</li>
             </ul>
             </div>
             """, unsafe_allow_html=True)
+        
+        # Feature Subset Viewer
+        with st.expander("📋 View Optimal Feature Subset"):
+            if model_choice == "BRF_MOE+DS_GA_84":
+                display_features_table(features1, "BRF_MOE+DS_GA_84")
+            else:
+                display_features_table(features2, "BRF_Chemopy_GA_101")
         
         # File Upload Section
         st.markdown("### 📤 Upload Your Data")
@@ -283,6 +352,23 @@ def main():
                     
                     st.dataframe(styled_results, height=300)
                     
+                    # Results Summary
+                    high_risk_count = sum(1 for p in probabilities[:, 1] if p >= 0.5)
+                    low_risk_count = len(probabilities) - high_risk_count
+                    
+                    st.markdown("""
+                    <div class='info-box'>
+                    <h4>Results Summary</h4>
+                    """, unsafe_allow_html=True)
+                    
+                    col_metric1, col_metric2, col_metric3 = st.columns(3)
+                    with col_metric1:
+                        st.metric("Total Samples", len(probabilities))
+                    with col_metric2:
+                        st.metric("High Risk Compounds", high_risk_count)
+                    with col_metric3:
+                        st.metric("Low Risk Compounds", low_risk_count)
+                    
                     # Download Results
                     st.download_button(
                         "📥 Download Prediction Results",
@@ -314,6 +400,20 @@ def main():
                     </div>
                     """, unsafe_allow_html=True)
                     
+                    # Feature Importance Analysis
+                    st.markdown("""
+                    <div class='info-box'>
+                    <h4>Feature Importance Visualization</h4>
+                    <p>The SHAP force plot below shows how each feature contributes to the prediction:
+                    <ul>
+                    <li>Red push: Features increasing the risk prediction</li>
+                    <li>Blue push: Features decreasing the risk prediction</li>
+                    <li>Width: Magnitude of the feature's impact</li>
+                    </ul>
+                    </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
                     # SHAP Force Plot
                     st.markdown("#### 🎯 Feature Contribution Analysis")
                     create_shap_force_plot(current_model, scaled_data, processed_data, sample_idx)
@@ -325,15 +425,30 @@ def main():
                 ⚠️ Please check your input file format and try again. Ensure all required features are present.
                 </div>
                 """, unsafe_allow_html=True)
+                
+                st.markdown("""
+                <div class='info-box'>
+                <h4>Troubleshooting Tips</h4>
+                <ul>
+                <li>Verify that your CSV file contains all required features</li>
+                <li>Check for any missing or incorrect values</li>
+                <li>Ensure feature names match exactly with the required format</li>
+                <li>Verify that all numerical values are properly formatted</li>
+                </ul>
+                </div>
+                """, unsafe_allow_html=True)
         else:
             st.markdown("""
             <div class='info-box'>
             <h4>Getting Started</h4>
             <p>1. Select your preferred prediction model</p>
-            <p>2. Prepare your CSV file with required molecular descriptors</p>
-            <p>3. Upload your file to begin the analysis</p>
+            <p>2. View the required features in the feature subset viewer</p>
+            <p>3. Prepare your CSV file with required molecular descriptors</p>
+            <p>4. Upload your file to begin the analysis</p>
+            <p>5. Explore SHAP visualization to understand prediction results</p>
             </div>
             """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
+        
