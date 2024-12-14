@@ -13,22 +13,57 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS
+st.markdown("""
+    <style>
+    .main {
+        padding: 2rem;
+    }
+    .stButton>button {
+        width: 100%;
+    }
+    .pred-text {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 @st.cache_resource
 def load_resources():
     """Load all models and scalers"""
     # Load Model 1 (MOE+DS)
     model1 = joblib.load("best_estimator_GA.pkl")
     scaler1 = joblib.load("scaler.pkl")
+    features1 = [
+        "apol", "ast_fraglike", "a_acc", "a_nCl", "a_nI", "a_nS",
+        "BCUT_SLOGP_0", "BCUT_SLOGP_2", "b_1rotR", "b_max1len", "chiral_u",
+        "GCUT_PEOE_0", "GCUT_SLOGP_2", "GCUT_SMR_0", "h_logD", "h_log_pbo",
+        "h_pKa", "h_pstates", "h_pstrain", "lip_druglike", "lip_violation",
+        "opr_leadlike", "opr_nring", "opr_violation", "PEOE_RPC-", "PEOE_VSA+1",
+        "PEOE_VSA+2", "PEOE_VSA+4", "PEOE_VSA+5", "PEOE_VSA+6", "PEOE_VSA-0",
+        "PEOE_VSA-4", "PEOE_VSA_FHYD", "Q_VSA_PNEG", "reactive", "rsynth",
+        "SlogP_VSA1", "SlogP_VSA2", "SlogP_VSA3", "SlogP_VSA4", "SlogP_VSA5",
+        "SlogP_VSA7", "SlogP_VSA9", "SMR_VSA1", "SMR_VSA4", "SMR_VSA5",
+        "SMR_VSA6", "vsa_other", "ALogP98_Unknown", "ES_Count_aaaC",
+        "ES_Count_aaCH", "ES_Count_aaO", "ES_Count_dS", "ES_Count_dsCH",
+        "ES_Count_dsN", "ES_Count_sCH3", "ES_Count_sNH2", "ES_Count_sOH",
+        "ES_Count_ssCH2", "ES_Count_sSH", "ES_Count_ssNH", "ES_Count_ssssN",
+        "ES_Count_tN", "ES_Sum_sssCH", "ES_Sum_ssssC", "QED", "QED_HBD",
+        "QED_MW", "QED_PSA", "Num_BridgeBonds", "Num_BridgeHeadAtoms",
+        "Num_MesoStereoAtomsCIP", "Num_NegativeAtoms", "Num_RingFusionBonds",
+        "Num_Rings3", "Num_Rings4", "Num_Rings6", "Num_Rings7",
+        "Num_Rings9Plus", "Num_SpiroAtoms", "Num_TerminalRotomers",
+        "Num_TrueAtropisomerCenters", "Molecular_FractionalPolarSASA", "IC"
+    ]
     
     # Load Model 2 (Chemopy)
     model2 = joblib.load("GA_chemopy_model.pkl")
     scaler2 = joblib.load("GA_chemopy_scaler.pkl")
-    
-    # Load features lists
     with open("GA_chemopy_features.pkl", 'rb') as f:
         features2 = joblib.load(f)
-    
-    return model1, scaler1, model2, scaler2, features2
+        
+    return model1, scaler1, features1, model2, scaler2, features2
 
 def process_features(data, model_choice, features_list):
     """Extract and validate required features"""
@@ -68,7 +103,7 @@ def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
 
 def main():
     # Load resources
-    model1, scaler1, model2, scaler2, features2 = load_resources()
+    model1, scaler1, features1, model2, scaler2, features2 = load_resources()
     
     # Page title
     st.title("🧬 Chemical Transfer Predictor for Breast Milk")
@@ -109,6 +144,25 @@ def main():
         help="Select which model to use for prediction"
     )
     
+    # Model-specific instructions
+    if model_choice == "BRF_MOE+DS_GA_84":
+        st.info("""
+        **Using BRF_MOE+DS_GA_84 Model**
+        - Upload your MOE/DS descriptor file
+        - The model will automatically extract the required 84 features
+        - Optimized for accurate prediction of breast milk transfer
+        """)
+    else:
+        st.info("""
+        **Using BRF_Chemopy_GA_101 Model**
+        1. First obtain Chemopy descriptors:
+           - Visit [ChemDes](http://www.scbdd.com/chemdes/)
+           - Enter your SMILES structure
+           - Select Chemopy descriptors
+           - Calculate and download
+        2. Upload the Chemopy descriptor file here
+        """)
+    
     # File upload
     uploaded_file = st.file_uploader(
         "Upload descriptor file (CSV format)",
@@ -124,7 +178,7 @@ def main():
             if model_choice == "BRF_MOE+DS_GA_84":
                 current_model = model1
                 current_scaler = scaler1
-                features_list = features1  # You'll need to define this list
+                features_list = features1
             else:
                 current_model = model2
                 current_scaler = scaler2
@@ -194,8 +248,12 @@ def main():
         # Show feature requirements
         if model_choice == "BRF_MOE+DS_GA_84":
             st.info("Please upload a file containing MOE and DS descriptors.")
+            with st.expander("View required features"):
+                st.write(features1)
         else:
             st.info("Please upload a file containing Chemopy descriptors from ChemDes.")
+            with st.expander("View required features"):
+                st.write(features2)
 
 if __name__ == "__main__":
     main()
