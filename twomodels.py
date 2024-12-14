@@ -14,7 +14,7 @@ st.set_page_config(
     page_icon="🧬"
 )
 
-# 自定义CSS，提升界面美观度
+# Enhanced CSS for better UI
 st.markdown("""
     <style>
     .main {
@@ -26,37 +26,81 @@ st.markdown("""
         color: white;
         border-radius: 5px;
         padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
     }
     .stButton>button:hover {
         background-color: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     .title-text {
         color: #1e3d59;
         text-align: center;
-        padding: 1rem;
+        padding: 1.5rem;
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     .subtitle-text {
         color: #2b6777;
         text-align: center;
-        padding: 0.5rem;
+        padding: 0.8rem;
+        font-size: 1.5rem;
+        font-weight: 500;
     }
     .info-box {
         background-color: #e7f3fe;
         border-left: 6px solid #2196F3;
-        padding: 1rem;
-        margin: 1rem 0;
+        padding: 1.2rem;
+        margin: 1.2rem 0;
+        border-radius: 0 5px 5px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .warning-box {
         background-color: #fff3cd;
         border-left: 6px solid #ffc107;
-        padding: 1rem;
-        margin: 1rem 0;
+        padding: 1.2rem;
+        margin: 1.2rem 0;
+        border-radius: 0 5px 5px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .feature-box {
         border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 1rem;
-        margin: 1rem 0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1.2rem 0;
+        background-color: white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .feature-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .success-box {
+        background-color: #d4edda;
+        border-left: 6px solid #28a745;
+        padding: 1.2rem;
+        margin: 1.2rem 0;
+        border-radius: 0 5px 5px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .model-header {
+        color: #2b6777;
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+    .feature-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .feature-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    .feature-list li:last-child {
+        border-bottom: none;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -88,6 +132,7 @@ def load_resources():
         "Num_Rings3", "Num_Rings4", "Num_Rings6", "Num_Rings7",
         "Num_Rings9Plus", "Num_SpiroAtoms", "Num_TerminalRotomers",
         "Num_TrueAtropisomerCenters", "Molecular_FractionalPolarSASA", "IC"
+
     ]
     
     # Model 2 (Chemopy)
@@ -106,7 +151,7 @@ def process_features(data, features_list):
     return data[features_list] if not missing_features else None, missing_features
 
 def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
-    """Generate SHAP force plot"""
+    """Generate SHAP force plot with enhanced styling"""
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(data_scaled)
     
@@ -114,7 +159,8 @@ def create_shap_force_plot(model, data_scaled, data_original, sample_idx):
         explainer.expected_value[1],
         shap_values[:,:,1][sample_idx],
         data_original.iloc[sample_idx,:],
-        matplotlib=False
+        matplotlib=False,
+        plot_cmap=["#ff0d57", "#1e88e5"]
     )
     
     shap.save_html(f"force_plot_{sample_idx}.html", force_plot)
@@ -125,67 +171,69 @@ def main():
     # Load resources
     model1, scaler1, features1, model2, scaler2, features2 = load_resources()
     
-    # Page Header
-    st.markdown("<h1 class='title-text'>🧬 Chemical Transfer Risk Predictor for Human Milk</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 class='subtitle-text'>Advanced Machine Learning Models for Predicting Chemical Exposure Risk</h3>", unsafe_allow_html=True)
+    # Enhanced Header
+    st.markdown("<h1 class='title-text'>🧬 Chemical Transfer Risk Predictor</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 class='subtitle-text'>Advanced Machine Learning for Chemical Transfer Analysis in Human Milk</h3>", unsafe_allow_html=True)
     
-    # Introduction
+    # Enhanced Introduction
     st.markdown("""
     <div class='info-box'>
-    This tool utilizes state-of-the-art machine learning models to predict the risk of chemical transfer 
-    into human breast milk. It offers two complementary prediction models, each optimized for specific 
-    types of molecular descriptors.
+    <h4>Welcome to the Chemical Transfer Risk Predictor!</h4>
+    This advanced tool leverages state-of-the-art Balanced Random Forest (BRF) models to assess the risk 
+    of chemical transfer into human breast milk. Choose between two specialized models, each optimized 
+    for different molecular descriptor sets.
     </div>
     """, unsafe_allow_html=True)
     
-    # Main Content Area - Using columns for layout
+    # Main Layout
     col1, col2 = st.columns([1, 2], gap="large")
     
     with col1:
-        st.markdown("### Model Selection and Data Input")
+        st.markdown("### 🎯 Model Selection")
         
-        # Model Selection with Detailed Info
         model_choice = st.radio(
             "Select Prediction Model",
             ["BRF_MOE+DS_GA_84", "BRF_Chemopy_GA_101"]
         )
         
-        # Model Information Box
+        # Enhanced Model Information Boxes
         if model_choice == "BRF_MOE+DS_GA_84":
             st.markdown("""
             <div class='feature-box'>
-            <h4>BRF_MOE+DS_GA_84 Model</h4>
-            <ul>
-            <li>84 optimized MOE and DS descriptors</li>
-            <li>Genetic algorithm feature selection</li>
-            <li>High accuracy on diverse chemical structures</li>
-            <li>Balanced ensemble learning approach</li>
+            <h4 class='model-header'>BRF_MOE+DS_GA_84 Model</h4>
+            <ul class='feature-list'>
+            <li>🔬 Based on Balanced Random Forest algorithm</li>
+            <li>📊 Requires molecular descriptors from MOE and Discovery Studio software</li>
+            <li>🎯 Automatically selects optimal 84 descriptors using genetic algorithm</li>
+            <li>💡 High accuracy for diverse chemical structures</li>
+            <li>⚖️ Balanced approach for reliable predictions</li>
             </ul>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
             <div class='feature-box'>
-            <h4>BRF_Chemopy_GA_101 Model</h4>
-            <ul>
-            <li>101 Chemopy molecular descriptors</li>
-            <li>Requires ChemDes calculation</li>
-            <li>Visit <a href='http://www.scbdd.com/chemdes/'>ChemDes</a> for descriptors</li>
-            <li>Optimized for comprehensive chemical space</li>
+            <h4 class='model-header'>BRF_Chemopy_GA_101 Model</h4>
+            <ul class='feature-list'>
+            <li>🔬 Based on Balanced Random Forest algorithm</li>
+            <li>🧪 Uses comprehensive Chemopy molecular descriptors</li>
+            <li>🎯 Automatically selects best 101 descriptors via genetic algorithm</li>
+            <li>🔗 Calculate descriptors at <a href='http://www.scbdd.com/chemdes/'>ChemDes</a></li>
+            <li>📈 Optimized for broad chemical space coverage</li>
             </ul>
             </div>
             """, unsafe_allow_html=True)
         
         # File Upload Section
-        st.markdown("### Upload Your Data")
+        st.markdown("### 📤 Upload Your Data")
         uploaded_file = st.file_uploader(
             "Upload CSV file with molecular descriptors",
             type=["csv"],
-            help="Please ensure your file contains all required descriptors"
+            help="Ensure your file contains all required molecular descriptors"
         )
         
         if uploaded_file:
-            st.markdown("<div class='info-box'>✅ File uploaded successfully</div>", unsafe_allow_html=True)
+            st.markdown("<div class='success-box'>✅ File successfully uploaded!</div>", unsafe_allow_html=True)
     
     with col2:
         if uploaded_file is not None:
@@ -193,76 +241,101 @@ def main():
                 # Load and process data
                 data = pd.read_csv(uploaded_file)
                 
-                # Preview uploaded data
-                st.markdown("### Data Preview")
+                # Data Preview
+                st.markdown("### 📊 Data Preview")
                 st.dataframe(data.head(), height=200)
                 
-                # Select features based on model
+                # Process features
                 features_list = features1 if model_choice == "BRF_MOE+DS_GA_84" else features2
                 processed_data, missing_features = process_features(data, features_list)
                 
                 if missing_features:
                     st.markdown(f"""
                     <div class='warning-box'>
-                    ⚠️ Missing {len(missing_features)} required features. 
-                    Click to view missing features.
+                    ⚠️ Warning: {len(missing_features)} required features are missing. 
+                    Please expand below to view details.
                     </div>
                     """, unsafe_allow_html=True)
-                    with st.expander("Missing Features"):
+                    with st.expander("View Missing Features"):
                         st.write(missing_features)
                 else:
-                    # Scale features and make predictions
+                    # Model predictions
                     current_model = model1 if model_choice == "BRF_MOE+DS_GA_84" else model2
                     current_scaler = scaler1 if model_choice == "BRF_MOE+DS_GA_84" else scaler2
                     
                     scaled_data = current_scaler.transform(processed_data)
                     probabilities = current_model.predict_proba(scaled_data)
                     
-                    # Results Display
-                    st.markdown("### 🎯 Prediction Results")
+                    # Enhanced Results Display
+                    st.markdown("### 📈 Prediction Results")
                     results_df = pd.DataFrame({
                         'Sample': range(1, len(processed_data) + 1),
-                        'Risk Class': ['High Risk' if p >= 0.5 else 'Low Risk' for p in probabilities[:, 1]],
+                        'Risk Classification': ['High Risk' if p >= 0.5 else 'Low Risk' for p in probabilities[:, 1]],
                         'Transfer Probability': [f"{p:.3f}" for p in probabilities[:, 1]]
                     })
-                    st.dataframe(results_df)
+                    
+                    # Style the dataframe
+                    def color_risk(val):
+                        color = 'red' if val == 'High Risk' else 'green'
+                        return f'color: {color}; font-weight: bold'
+                    
+                    styled_results = results_df.style.applymap(
+                        color_risk, subset=['Risk Classification']
+                    )
+                    
+                    st.dataframe(styled_results, height=300)
                     
                     # Download Results
                     st.download_button(
-                        "📥 Download Results",
+                        "📥 Download Prediction Results",
                         results_df.to_csv(index=False),
-                        "prediction_results.csv",
-                        "text/csv"
+                        "chemical_transfer_predictions.csv",
+                        "text/csv",
+                        key='download-csv'
                     )
                     
-                    # SHAP Analysis
-                    st.markdown("### 🔍 SHAP Analysis")
+                    # SHAP Analysis Section
+                    st.markdown("### 🔍 Detailed SHAP Analysis")
                     sample_idx = st.number_input(
-                        "Select sample for detailed analysis",
-                        0, len(processed_data)-1, 0
-                    )
+                        "Select sample number for detailed analysis",
+                        1, len(processed_data), 1
+                    ) - 1  # Convert to 0-based index internally
                     
-                    # Prediction Info
+                    # Enhanced Prediction Info
                     prob = probabilities[sample_idx, 1]
+                    risk_color = "red" if prob >= 0.5 else "green"
                     st.markdown(f"""
                     <div class='info-box'>
-                    <h4>Sample {sample_idx + 1} Analysis</h4>
-                    <p>Transfer Probability: <span style='color:{"red" if prob >= 0.5 else "green"};
-                    font-weight:bold'>{prob:.3f}</span></p>
-                    <p>Classification: <span style='color:{"red" if prob >= 0.5 else "green"};
-                    font-weight:bold'>{"High Risk" if prob >= 0.5 else "Low Risk"}</span></p>
+                    <h4>Analysis for Sample {sample_idx + 1}</h4>
+                    <p style='font-size: 1.1em;'>
+                        Transfer Probability: <span style='color:{risk_color};
+                        font-weight:bold'>{prob:.3f}</span><br>
+                        Classification: <span style='color:{risk_color};
+                        font-weight:bold'>{"High Risk" if prob >= 0.5 else "Low Risk"}</span>
+                    </p>
                     </div>
                     """, unsafe_allow_html=True)
                     
                     # SHAP Force Plot
-                    st.markdown("#### Feature Contribution Analysis")
+                    st.markdown("#### 🎯 Feature Contribution Analysis")
                     create_shap_force_plot(current_model, scaled_data, processed_data, sample_idx)
             
             except Exception as e:
                 st.error(f"Error processing file: {str(e)}")
-                st.exception(e)
+                st.markdown("""
+                <div class='warning-box'>
+                ⚠️ Please check your input file format and try again. Ensure all required features are present.
+                </div>
+                """, unsafe_allow_html=True)
         else:
-            st.markdown("<div class='info-box'>⚙️ Upload your data to begin analysis</div>", unsafe_allow_html=True)
+            st.markdown("""
+            <div class='info-box'>
+            <h4>Getting Started</h4>
+            <p>1. Select your preferred prediction model</p>
+            <p>2. Prepare your CSV file with required molecular descriptors</p>
+            <p>3. Upload your file to begin the analysis</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
