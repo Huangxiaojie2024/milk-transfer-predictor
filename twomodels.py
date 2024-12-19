@@ -232,7 +232,7 @@ def main():
     </div>
     <h1 class='title-text'>Chemical Transfer Risk Predictor for Human Milk</h1>
     """, unsafe_allow_html=True)
-    st.markdown("<h3 class='subtitle-text'>Advanced Machine Learning Models for Assessing Chemical Exposure Risk in Breastfeeding Infants</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 class='subtitle-text'>Interpretable Machine Learning Models for Assessing Chemical Exposure Risk in Breastfeeding Infants</h3>", unsafe_allow_html=True)
     
     # Enhanced Introduction with SHAP explanation
     st.markdown("""
@@ -265,7 +265,7 @@ def main():
             <ul class='feature-list'>
             <li>🔬 Based on Balanced Random Forest algorithm</li>
             <li>📊 Requires molecular descriptors from MOE and Discovery Studio software</li>
-            <li>🎯 Automatically selects optimal 84 descriptors using genetic algorithm</li>
+            <li>🎯 Automatically selects optimal 84 descriptors</li>
             <li>⚖️ Balanced approach for reliable predictions</li>
             </ul>
             </div>
@@ -276,9 +276,8 @@ def main():
             <h4 class='model-header'>BRF_Chemopy_GA_101 Model</h4>
             <ul class='feature-list'>
             <li>🔬 Based on Balanced Random Forest algorithm</li>
-            <li>🧪 Uses comprehensive Chemopy molecular descriptors</li>
-            <li>🎯 Automatically selects best 101 descriptors via genetic algorithm</li>
             <li>🔗 Calculate descriptors at <a href='http://www.scbdd.com/chemdes/'>ChemDes</a></li>
+            <li>🎯 Automatically selects best 101 descriptors</li>
             <li>⚖️ Balanced approach for reliable predictions</li>
             </ul>
             </div>
